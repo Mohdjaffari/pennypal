@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/language_service.dart';
+import '../../core/notifications/notification_service.dart';
+import '../../screens/notifications/notifications_screen.dart';
 
 /// Sleek and sticky App Bar for screens across the PennyPal application.
 /// Implements [PreferredSizeWidget] so it can be passed directly as [Scaffold.appBar],
@@ -7,7 +10,7 @@ import '../../core/constants/app_colors.dart';
 class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final String userName;
-  final String subtitle;
+  final String? subtitle;
   final bool hasUnreadNotification;
   final bool isBackNavigation;
   final VoidCallback? onMenuPressed;
@@ -18,7 +21,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     this.title,
     this.userName = 'Mohd Jaffari',
-    this.subtitle = "Keep going! You're doing great!",
+    this.subtitle,
     this.hasUnreadNotification = true,
     this.isBackNavigation = false,
     this.onMenuPressed,
@@ -33,56 +36,70 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   static Widget circularButton({
     required IconData icon,
     required VoidCallback onTap,
-    Color iconColor = AppColors.textPrimary,
+    Color? iconColor,
+    Color? backgroundColor,
+    Color? borderColor,
     double iconSize = 22,
     Widget? badge,
     String? tooltip,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: Tooltip(
-        message: tooltip ?? '',
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(50),
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Material(
+          color: Colors.transparent,
+          child: Tooltip(
+            message: tooltip ?? '',
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(50),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: backgroundColor ?? AppColors.surfaceOf(context),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: borderColor ?? AppColors.borderOf(context), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(icon, color: iconColor, size: iconSize),
-                ?badge,
-              ],
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(icon, color: iconColor ?? AppColors.textPrimaryOf(context), size: iconSize),
+                    ?badge,
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayTitle = title ?? 'Hello, $userName 👋';
+    final isRTL = Directionality.of(context) == TextDirection.rtl;
+    final displayTitle = title ?? '${context.tr('hello')}, $userName 👋';
+    final displaySubtitle = subtitle ?? context.tr('header_subtitle');
+    final bg = AppColors.backgroundOf(context);
+    final surface = AppColors.surfaceOf(context);
+    final border = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.95),
-        border: const Border(
+        color: bg.withValues(alpha: 0.95),
+        border: Border(
           bottom: BorderSide(
-            color: AppColors.border,
+            color: border,
             width: 0.8,
           ),
         ),
@@ -94,7 +111,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Left: Squircle Button (Menu or Back) + Title/Subtitle
+              // Left/Start: Squircle Button (Menu or Back) + Title/Subtitle
               Expanded(
                 child: Row(
                   children: [
@@ -114,9 +131,9 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                         child: Container(
                           padding: const EdgeInsets.all(9),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.border, width: 1),
+                            border: Border.all(color: border, width: 1),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.03),
@@ -127,9 +144,11 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                           ),
                           child: Icon(
                             isBackNavigation
-                                ? Icons.arrow_back_rounded
+                                ? (isRTL
+                                    ? Icons.arrow_forward_rounded
+                                    : Icons.arrow_back_rounded)
                                 : Icons.menu_rounded,
-                            color: AppColors.textPrimary,
+                            color: textPrimary,
                             size: 22,
                           ),
                         ),
@@ -145,21 +164,23 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                         children: [
                           Text(
                             displayTitle,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: textPrimary,
                               fontSize: 17.5,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
+                              height: 1.35,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            subtitle,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            displaySubtitle,
+                            style: TextStyle(
+                              color: textSecondary,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
+                              height: 1.3,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -181,9 +202,19 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
               else
                 circularButton(
                   icon: Icons.notifications_none_rounded,
-                  onTap: onNotificationPressed ?? () {},
+                  onTap: onNotificationPressed ??
+                      () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationsScreen(),
+                          ),
+                        );
+                      },
                   tooltip: 'Notifications',
-                  badge: hasUnreadNotification
+                  iconColor: textPrimary,
+                  backgroundColor: surface,
+                  borderColor: border,
+                  badge: (hasUnreadNotification && NotificationService.instance.unreadCount > 0)
                       ? Positioned(
                           top: 10,
                           right: 11,
@@ -194,7 +225,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                               color: AppColors.primaryPink,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.surface,
+                                color: surface,
                                 width: 1.5,
                               ),
                             ),

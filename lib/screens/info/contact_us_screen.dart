@@ -68,18 +68,18 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceOf(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         title: Row(
-          children: const [
-            Icon(Icons.check_circle_rounded,
+          children: [
+            const Icon(Icons.check_circle_rounded,
                 color: AppColors.successGreen, size: 26),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text('Message Sent!',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary)),
+                    color: AppColors.textPrimaryOf(context))),
           ],
         ),
         content: const Text(
@@ -108,7 +108,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
         title: 'Contact Us 📬',
         subtitle: 'We are here to help anytime',
@@ -157,21 +157,21 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               const SizedBox(height: 26),
 
               // 2. Interactive Inquiry Form Header
-              const Text(
+              Text(
                 'Send Us a Direct Message',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                   letterSpacing: -0.2,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Have a feature request, question, or need budget advice? Write to us below.',
                 style: TextStyle(
                   fontSize: 12.5,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryOf(context),
                 ),
               ),
               const SizedBox(height: 14),
@@ -203,9 +203,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderOf(context)),
           ),
           child: Row(
             children: [
@@ -224,21 +224,23 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary)),
+                            color: AppColors.textSecondaryOf(context))),
                     const SizedBox(height: 2),
                     Text(value,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary)),
+                            color: AppColors.textPrimaryOf(context))),
                     const SizedBox(height: 2),
                     Text(subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.textMuted)),
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.textMuted)),
                   ],
                 ),
               ),
@@ -252,12 +254,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   }
 
   Widget _buildForm() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Form(
         key: _formKey,
@@ -268,6 +272,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             _label('Your Name'),
             TextFormField(
               controller: _nameController,
+              style: TextStyle(color: AppColors.textPrimaryOf(context), fontSize: 14),
               decoration: _inputDecoration(
                 hint: 'e.g. Mohd Jaffari',
                 prefixIcon: Icons.person_outline_rounded,
@@ -282,6 +287,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
+              style: TextStyle(color: AppColors.textPrimaryOf(context), fontSize: 14),
               decoration: _inputDecoration(
                 hint: 'name@university.edu',
                 prefixIcon: Icons.email_outlined,
@@ -299,24 +305,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: AppColors.surfaceMutedOf(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: AppColors.borderOf(context)),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedCategory,
+                  dropdownColor: AppColors.surfaceOf(context),
                   isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.textSecondary),
+                  icon: Icon(Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.textSecondaryOf(context)),
                   items: _categories.map((c) {
                     return DropdownMenuItem(
                       value: c,
                       child: Text(c,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary)),
+                              color: AppColors.textPrimaryOf(context))),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -332,20 +339,22 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             TextFormField(
               controller: _messageController,
               maxLines: 4,
+              style: TextStyle(color: AppColors.textPrimaryOf(context), fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Describe how we can help you...',
-                hintStyle:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                hintStyle: TextStyle(
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+                    fontSize: 13),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: AppColors.surfaceMutedOf(context),
                 contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: AppColors.borderOf(context)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: AppColors.borderOf(context)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -404,10 +413,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       padding: const EdgeInsets.only(bottom: 6.0),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimaryOf(context),
         ),
       ),
     );
@@ -417,20 +426,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     required String hint,
     required IconData prefixIcon,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-      prefixIcon: Icon(prefixIcon, color: AppColors.textSecondary, size: 18),
+      hintStyle: TextStyle(
+        color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+        fontSize: 13,
+      ),
+      prefixIcon: Icon(prefixIcon, color: AppColors.textSecondaryOf(context), size: 18),
       filled: true,
-      fillColor: AppColors.background,
+      fillColor: AppColors.surfaceMutedOf(context),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),

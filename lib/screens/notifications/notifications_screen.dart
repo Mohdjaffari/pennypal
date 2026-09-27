@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/notification_model.dart';
 import '../../components/notifications/notification_tile.dart';
+import '../../core/localization/language_service.dart';
+
+import '../../core/notifications/notification_service.dart';
 
 /// Screen representing the Notifications view in PennyPal (Screen 11).
 /// Supports marking notifications as read, swipe dismissal, and clearing alerts.
@@ -15,15 +18,24 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final List<NotificationModel> _notifications =
-      List.from(NotificationModel.defaultNotifications);
+  @override
+  void initState() {
+    super.initState();
+    NotificationService.instance.addListener(_onServiceChanged);
+  }
+
+  @override
+  void dispose() {
+    NotificationService.instance.removeListener(_onServiceChanged);
+    super.dispose();
+  }
+
+  void _onServiceChanged() {
+    if (mounted) setState(() {});
+  }
 
   void _markAllAsRead() {
-    setState(() {
-      for (int i = 0; i < _notifications.length; i++) {
-        _notifications[i] = _notifications[i].copyWith(isUnread: false);
-      }
-    });
+    NotificationService.instance.markAllAsRead();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('All notifications marked as read'),
@@ -32,18 +44,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  void _toggleNotificationRead(int index) {
-    setState(() {
-      final current = _notifications[index];
-      _notifications[index] = current.copyWith(isUnread: !current.isUnread);
-    });
+  void _toggleNotificationRead(String id) {
+    NotificationService.instance.toggleRead(id);
   }
 
-  void _removeNotification(int index) {
-    final removed = _notifications[index];
-    setState(() {
-      _notifications.removeAt(index);
-    });
+  void _removeNotification(int index, NotificationModel removed) {
+    NotificationService.instance.removeNotification(removed.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('"${removed.title}" removed'),
@@ -52,9 +58,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           label: 'UNDO',
           textColor: AppColors.primaryBlue,
           onPressed: () {
-            setState(() {
-              _notifications.insert(index, removed);
-            });
+            NotificationService.instance.insertNotification(index, removed);
           },
         ),
       ),
@@ -63,22 +67,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasUnread = _notifications.any((n) => n.isUnread);
+    final notifications = NotificationService.instance.notifications;
+    final hasUnread = notifications.any((n) => n.isUnread);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.backgroundOf(context),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimaryOf(context)),
           onPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
-          'Notifications',
+        title: Text(
+          context.tr('notifications'),
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryOf(context),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.3,
@@ -88,9 +93,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (hasUnread)
             TextButton(
               onPressed: _markAllAsRead,
-              child: const Text(
-                'Mark read',
-                style: TextStyle(
+              child: Text(
+                context.tr('mark_all_read'),
+                style: const TextStyle(
                   color: AppColors.primaryBlue,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
@@ -99,7 +104,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
         ],
       ),
-      body: _notifications.isEmpty
+      body: notifications.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -108,7 +113,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlueLight,
+                      color: AppColors.primaryBlue.withValues(
+                        alpha: Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.1,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -118,19 +125,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'All Caught Up!',
+                  Text(
+                    context.tr('all_caught_up'),
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryOf(context),
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'No new alerts at the moment.',
+                  Text(
+                    context.tr('no_alerts'),
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryOf(context),
                       fontSize: 13,
                     ),
                   ),
@@ -139,20 +146,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             )
           : ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              itemCount: _notifications.length,
-              separatorBuilder: (context, index) => const Divider(
+              itemCount: notifications.length,
+              separatorBuilder: (context, index) => Divider(
                 height: 1,
                 thickness: 0.8,
-                color: AppColors.border,
+                color: AppColors.borderOf(context),
                 indent: 20,
                 endIndent: 20,
               ),
               itemBuilder: (context, index) {
-                final notif = _notifications[index];
+                final notif = notifications[index];
                 return NotificationTile(
                   notification: notif,
-                  onTap: () => _toggleNotificationRead(index),
-                  onDismissed: (direction) => _removeNotification(index),
+                  onTap: () => _toggleNotificationRead(notif.id),
+                  onDismissed: (direction) => _removeNotification(index, notif),
                 );
               },
             ),

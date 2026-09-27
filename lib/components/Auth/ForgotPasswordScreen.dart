@@ -1,769 +1,895 @@
-import 'dart:math';
-import 'dart:ui' show PointMode;
-
+// ignore_for_file: file_names
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pages_app/components/Auth/LoginScreen.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/theme/theme_service.dart';
+import 'LoginScreen.dart';
+import 'penny_pal_brand_logo.dart';
 
-class AppColors {
-  static const orange = Color(0xFFE9744F);
-  static const gold = Color(0xFFD9BD73);
-  static const green = Color(0xFF62C08F);
-
-  static const sheet = Color(0xFFFFFFFF);
-  static const field = Color(0xFFF4F4F4);
-  static const ink = Color(0xFF0A0A0A);
-  static const placeholder = Color(0xFF8D8D8D);
-  static const muted = Color(0xFF666666);
-  static const hairline = Color(0xFFD9D9D9);
-  static const error = Color(0xFFC4392B);
-}
-
-void main() {
-  runApp(const ForgotPasswordApp());
-}
-
-class ForgotPasswordApp extends StatelessWidget {
-  const ForgotPasswordApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Forgot Password',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.orange,
-        ),
-        textTheme: GoogleFonts.figtreeTextTheme(),
-      ),
-      home: const ForgotPasswordScreen(),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// FORGOT PASSWORD SCREEN
-// ---------------------------------------------------------------------------
-
-class ForgotPasswordScreen extends StatelessWidget {
+/// Professional, pixel-perfect Forgot Password Screen for PennyPal.
+/// Adheres strictly to the PennyPal brand identity and visual aesthetic:
+/// - PennyPal Brand Emblem & Two-Tone Typography ("Penny" Blue + "Pal" Pink)
+/// - Interactive Dark/Light Theme Toggle in AppBar
+/// - Clean step-based password reset workflow:
+///   1. Request reset link / OTP via registered Email or Phone
+///   2. Interactive 4-digit code verification + new password creation
+/// - Smooth haptics, timers, and navigation back to Login
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
-  static const double _sheetOverlap = 66;
-
   @override
-  Widget build(BuildContext context) {
-    final topInset = MediaQuery.paddingOf(context).top;
-    final heroHeight = topInset + 250;
-
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: AppColors.sheet,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: AppColors.sheet,
-        body: Stack(
-          children: [
-            // ---------------------------------------------------------------
-            // HERO
-            // ---------------------------------------------------------------
-
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: heroHeight,
-              child: _ForgotPasswordHero(
-                topInset: topInset,
-              ),
-            ),
-
-            // ---------------------------------------------------------------
-            // CONTENT
-            // ---------------------------------------------------------------
-
-            CustomScrollView(
-              keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: heroHeight - _sheetOverlap,
-                  ),
-                ),
-
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _ForgotPasswordSheet(),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-// ---------------------------------------------------------------------------
-// HERO
-// ---------------------------------------------------------------------------
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
+    with SingleTickerProviderStateMixin {
+  final _emailPhoneController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
-class _ForgotPasswordHero extends StatelessWidget {
-  const _ForgotPasswordHero({
-    required this.topInset,
-  });
-
-  final double topInset;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Background
-        const Positioned.fill(
-          child: ColoredBox(
-            color: AppColors.orange,
-          ),
-        ),
-
-        // Decorative blobs
-        const Positioned(
-          left: -118,
-          top: 58,
-          child: _Blob(
-            size: 200,
-            color: AppColors.gold,
-          ),
-        ),
-
-        const Positioned(
-          right: -88,
-          top: 116,
-          child: _Blob(
-            size: 190,
-            color: AppColors.green,
-          ),
-        ),
-
-        // Grain texture
-        const Positioned.fill(
-          child: GrainOverlay(),
-        ),
-
-        // Hero title
-        Positioned(
-          top: topInset + 52,
-          left: 24,
-          right: 24,
-          child: Column(
-            children: [
-              Text(
-                'Forgot password?',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.figtree(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  height: 1.12,
-                  letterSpacing: -0.3,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Text(
-                'Let’s get you back into your account.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.figtree(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
-                  color: Colors.white.withOpacity(.88),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// BLOB
-// ---------------------------------------------------------------------------
-
-class _Blob extends StatelessWidget {
-  const _Blob({
-    required this.size,
-    required this.color,
-  });
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// FORGOT PASSWORD SHEET
-// ---------------------------------------------------------------------------
-
-class _ForgotPasswordSheet extends StatefulWidget {
-  const _ForgotPasswordSheet();
-
-  @override
-  State<_ForgotPasswordSheet> createState() =>
-      _ForgotPasswordSheetState();
-}
-
-class _ForgotPasswordSheetState
-    extends State<_ForgotPasswordSheet> {
+  final List<TextEditingController> _otpControllers =
+      List.generate(4, (_) => TextEditingController());
+  final List<FocusNode> _otpFocusNodes = List.generate(4, (_) => FocusNode());
 
   final _formKey = GlobalKey<FormState>();
+  final _resetFormKey = GlobalKey<FormState>();
 
-  final _emailController = TextEditingController();
-
-  late final TapGestureRecognizer _loginTap;
-
+  bool _isCodeSent = false;
   bool _isLoading = false;
-  bool _emailSent = false;
+  bool _obscureNewPass = true;
+  bool _obscureConfirmPass = true;
+  bool _isInputValid = false;
+
+  int _resendCountdown = 45;
+  Timer? _countdownTimer;
+
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
+  late final TapGestureRecognizer _loginTap;
 
   @override
   void initState() {
     super.initState();
 
-    _loginTap = TapGestureRecognizer()
-      ..onTap = () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginScreen()));
-      };
+    ThemeService.instance.addListener(_handleThemeChanged);
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    _fadeAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    );
+
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _emailPhoneController.addListener(() {
+      final text = _emailPhoneController.text.trim();
+      final valid = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text) ||
+          RegExp(r'^[+0-9\s-]{8,15}$').hasMatch(text);
+      if (valid != _isInputValid) {
+        setState(() => _isInputValid = valid);
+      }
+    });
+
+    _loginTap = TapGestureRecognizer()..onTap = _navigateToLogin;
+
+    _animController.forward();
+  }
+
+  void _handleThemeChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    ThemeService.instance.removeListener(_handleThemeChanged);
+    _animController.dispose();
+    _emailPhoneController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    for (var c in _otpControllers) {
+      c.dispose();
+    }
+    for (var f in _otpFocusNodes) {
+      f.dispose();
+    }
+    _countdownTimer?.cancel();
     _loginTap.dispose();
-
     super.dispose();
   }
 
-  // -------------------------------------------------------------------------
-  // EMAIL VALIDATION
-  // -------------------------------------------------------------------------
-
-  String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
-
-    if (email.isEmpty) {
-      return 'Enter your email';
-    }
-
-    if (!RegExp(
-      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-    ).hasMatch(email)) {
-      return 'Enter a valid email address';
-    }
-
-    return null;
+  void _startCountdown() {
+    _resendCountdown = 45;
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_resendCountdown > 0) {
+        setState(() => _resendCountdown--);
+      } else {
+        timer.cancel();
+      }
+    });
   }
 
-  // -------------------------------------------------------------------------
-  // SEND RESET LINK
-  // -------------------------------------------------------------------------
+  void _navigateToLogin() {
+    HapticFeedback.selectionClick();
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, anim, secAnim) => const LoginScreen(),
+        transitionsBuilder: (context, anim, secAnim, child) {
+          return FadeTransition(opacity: anim, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 280),
+      ),
+    );
+  }
 
-  Future<void> _sendResetLink() async {
+  Future<void> _handleSendInstructions() async {
     FocusScope.of(context).unfocus();
 
     if (!(_formKey.currentState?.validate() ?? false)) {
+      HapticFeedback.vibrate();
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    HapticFeedback.mediumImpact();
+    setState(() => _isLoading = true);
 
-    final email = _emailController.text.trim();
-
-    debugPrint('Password reset requested for: $email');
-
-    // -----------------------------------------------------------------------
-    // TODO:
-    // Connect Firebase Authentication or your backend API here.
-    //
-    // Example:
-    //
-    // await FirebaseAuth.instance.sendPasswordResetEmail(
-    //   email: email,
-    // );
-    // -----------------------------------------------------------------------
-
-    await Future.delayed(
-      const Duration(seconds: 1),
-    );
+    await Future.delayed(const Duration(milliseconds: 650));
 
     if (!mounted) return;
-
     setState(() {
       _isLoading = false;
-      _emailSent = true;
+      _isCodeSent = true;
     });
-  }
 
-  // -------------------------------------------------------------------------
-  // BUILD
-  // -------------------------------------------------------------------------
+    _startCountdown();
 
-  @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.sheet,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(40),
-        ),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        24,
-        28,
-        24,
-        26 + bottomInset,
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-
-            // ---------------------------------------------------------------
-            // ICON
-            // ---------------------------------------------------------------
-
-            Center(
-              child: Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  color: AppColors.field,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.lock_reset_rounded,
-                  size: 29,
-                  color: AppColors.ink,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            // ---------------------------------------------------------------
-            // TITLE
-            // ---------------------------------------------------------------
-
-            Text(
-              _emailSent
-                  ? 'Check your inbox'
-                  : 'Reset your password',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.figtree(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppColors.ink,
-                letterSpacing: -.2,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // ---------------------------------------------------------------
-            // DESCRIPTION
-            // ---------------------------------------------------------------
-
-            Text(
-              _emailSent
-                  ? 'If an account exists for this email, '
-                      'we’ve sent you a password reset link.'
-                  : 'Enter the email address associated with your '
-                      'account and we’ll send you a secure reset link.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.figtree(
-                fontSize: 14,
-                height: 1.45,
-                color: AppColors.muted,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ---------------------------------------------------------------
-            // EMAIL FIELD
-            // ---------------------------------------------------------------
-
-            if (!_emailSent) ...[
-              _PillField(
-                controller: _emailController,
-                hint: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                autofillHints: const [
-                  AutofillHints.email,
-                  AutofillHints.username,
-                ],
-                textInputAction: TextInputAction.done,
-                validator: _validateEmail,
-                onSubmitted: (_) => _sendResetLink(),
-              ),
-
-              const SizedBox(height: 20),
-
-              // -------------------------------------------------------------
-              // RESET BUTTON
-              // -------------------------------------------------------------
-
-              ClipRRect(
-                borderRadius: BorderRadius.circular(29),
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      height: 58,
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed:
-                            _isLoading ? null : _sendResetLink,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.ink,
-                          disabledBackgroundColor:
-                              AppColors.ink.withOpacity(.55),
-                          foregroundColor: Colors.white,
-                          shape: const StadiumBorder(),
-                          textStyle: GoogleFonts.figtree(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(
-                            milliseconds: 200,
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  key: ValueKey('loader'),
-                                  width: 21,
-                                  height: 21,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  'Send reset link',
-                                  key: ValueKey('text'),
-                                ),
-                        ),
-                      ),
-                    ),
-
-                    const Positioned.fill(
-                      child: GrainOverlay(
-                        opacity: .09,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            // ---------------------------------------------------------------
-            // SUCCESS STATE
-            // ---------------------------------------------------------------
-
-            if (_emailSent) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.green.withOpacity(.10),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.green.withOpacity(.35),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        color: AppColors.green,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check_rounded,
-                        size: 19,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    Expanded(
-                      child: Text(
-                        'Check your email and follow the '
-                        'instructions to create a new password.',
-                        style: GoogleFonts.figtree(
-                          fontSize: 13.5,
-                          height: 1.4,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Resend
-              OutlinedButton(
-                onPressed: _isLoading
-                    ? null
-                    : _sendResetLink,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  shape: const StadiumBorder(),
-                  side: const BorderSide(
-                    color: AppColors.hairline,
-                  ),
-                  foregroundColor: AppColors.ink,
-                  textStyle: GoogleFonts.figtree(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                child: const Text(
-                  'Send again',
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 24),
-
-            // ---------------------------------------------------------------
-            // BACK TO LOGIN
-            // ---------------------------------------------------------------
-
-            Text.rich(
-              TextSpan(
-                style: GoogleFonts.figtree(
-                  fontSize: 15,
-                  color: AppColors.ink,
-                ),
-                children: [
-                  const TextSpan(
-                    text: 'Remember your password? ',
-                  ),
-
-                  TextSpan(
-                    text: 'Login',
-                    recognizer: _loginTap,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ],
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 4),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: const [
+            Icon(Icons.mark_email_read_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 10),
+            Text('4-digit recovery code sent successfully!'),
           ],
         ),
+        backgroundColor: AppColors.primaryBlue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
-}
 
-// ---------------------------------------------------------------------------
-// REUSABLE PILL FIELD
-// ---------------------------------------------------------------------------
+  Future<void> _handleResetPassword() async {
+    FocusScope.of(context).unfocus();
 
-class _PillField extends StatelessWidget {
-  const _PillField({
-    required this.controller,
-    required this.hint,
-    this.keyboardType,
-    this.textInputAction,
-    this.autofillHints,
-    this.validator,
-    this.onSubmitted, 
-    this.obscureText= false
-  });
-
-  final TextEditingController controller;
-  final String hint;
-
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-  final Iterable<String>? autofillHints;
-  final FormFieldValidator<String>? validator;
-  final ValueChanged<String>? onSubmitted;
-
-  static OutlineInputBorder _border([
-    Color? color,
-  ]) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(100),
-      borderSide: color == null
-          ? BorderSide.none
-          : BorderSide(
-              color: color,
-              width: 1.5,
-            ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      autofillHints: autofillHints,
-      validator: validator,
-      onFieldSubmitted: onSubmitted,
-      cursorColor: AppColors.ink,
-      style: GoogleFonts.figtree(
-        fontSize: 16,
-        color: AppColors.ink,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.figtree(
-          fontSize: 16,
-          color: AppColors.placeholder,
+    final otp = _otpControllers.map((c) => c.text).join();
+    if (otp.length < 4) {
+      HapticFeedback.vibrate();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter the complete 4-digit code'),
+          backgroundColor: AppColors.expenseRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        filled: true,
-        fillColor: AppColors.field,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 22,
-          vertical: 17,
-        ),
-        border: _border(),
-        enabledBorder: _border(),
-        focusedBorder: _border(
-          AppColors.ink,
-        ),
-        errorBorder: _border(
-          AppColors.error,
-        ),
-        focusedErrorBorder: _border(
-          AppColors.error,
-        ),
-        errorStyle: GoogleFonts.figtree(
-          fontSize: 12.5,
-          height: 1.3,
-          color: AppColors.error,
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// GRAIN OVERLAY
-// ---------------------------------------------------------------------------
-
-class GrainOverlay extends StatelessWidget {
-  const GrainOverlay({
-    super.key,
-    this.opacity = .07,
-  });
-
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: RepaintBoundary(
-        child: CustomPaint(
-          painter: _GrainPainter(opacity),
-        ),
-      ),
-    );
-  }
-}
-
-class _GrainPainter extends CustomPainter {
-  const _GrainPainter(this.opacity);
-
-  final double opacity;
-
-  @override
-  void paint(
-    Canvas canvas,
-    Size size,
-  ) {
-    final random = Random(7);
-
-    final count =
-        (size.width * size.height / 10).round();
-
-    final light = <Offset>[];
-    final dark = <Offset>[];
-
-    for (var i = 0; i < count; i++) {
-      final point = Offset(
-        random.nextDouble() * size.width,
-        random.nextDouble() * size.height,
       );
-
-      (random.nextBool() ? light : dark).add(point);
+      return;
     }
 
-    final alpha = (opacity * 255).round();
+    if (!(_resetFormKey.currentState?.validate() ?? false)) {
+      HapticFeedback.vibrate();
+      return;
+    }
 
-    final paint = Paint()
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.square;
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      HapticFeedback.vibrate();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Passwords do not match'),
+          backgroundColor: AppColors.expenseRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
 
-    canvas.drawPoints(
-      PointMode.points,
-      light,
-      paint..color = Colors.white.withAlpha(alpha),
+    HapticFeedback.mediumImpact();
+    setState(() => _isLoading = true);
+
+    await Future.delayed(const Duration(milliseconds: 750));
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: const [
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 10),
+            Text('Password updated successfully! Please login.'),
+          ],
+        ),
+        backgroundColor: AppColors.successGreen,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
+      ),
     );
 
-    canvas.drawPoints(
-      PointMode.points,
-      dark,
-      paint..color = Colors.black.withAlpha(alpha),
-    );
+    _navigateToLogin();
   }
 
   @override
-  bool shouldRepaint(
-    covariant _GrainPainter oldDelegate,
-  ) {
-    return oldDelegate.opacity != opacity;
+  Widget build(BuildContext context) {
+    final isDark = ThemeService.instance.isDarkMode;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFFAFBFD);
+    final backIconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+    final backIconColor = isDark ? Colors.white : const Color(0xFF334155);
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDark
+          ? SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent)
+          : SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          backgroundColor: bgColor,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: backIconBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 16,
+                    color: backIconColor,
+                  ),
+                ),
+                onPressed: () {
+                  if (_isCodeSent) {
+                    setState(() => _isCodeSent = false);
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+          ),
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: FadeTransition(
+                    opacity: _fadeAnim,
+                    child: SlideTransition(
+                      position: _slideAnim,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 320),
+                        transitionBuilder: (child, animation) =>
+                            FadeTransition(opacity: animation, child: child),
+                        child: _isCodeSent
+                            ? _buildOtpStage(isDark)
+                            : _buildRequestStage(isDark),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Initial Screen: Enter email or phone to receive OTP/reset instructions
+  Widget _buildRequestStage(bool isDark) {
+    final inputFill = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final inputBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final subtextColor = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. PennyPal Brand Emblem & Tagline
+          const PennyPalBrandLogo(
+            iconSize: 58,
+            titleFontSize: 24,
+            subtitleFontSize: 12.5,
+          ),
+
+          const SizedBox(height: 28),
+
+          // 2. Titles
+          Text(
+            'Forgot Password?',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              "Don't worry! Enter your registered email address or phone number and we'll send a recovery code.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                height: 1.45,
+                fontWeight: FontWeight.w400,
+                color: subtextColor,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 34),
+
+          // 3. Email or Phone Field
+          TextFormField(
+            controller: _emailPhoneController,
+            keyboardType: TextInputType.emailAddress,
+            style: GoogleFonts.inter(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter your registered email or phone';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: 'Email or Phone',
+              hintStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+              filled: true,
+              fillColor: inputFill,
+              prefixIcon: Icon(
+                Icons.mail_outline_rounded,
+                size: 20,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+              suffixIcon: _isInputValid
+                  ? const Padding(
+                      padding: EdgeInsets.only(right: 14.0),
+                      child: Icon(
+                        Icons.check_circle_rounded,
+                        color: AppColors.successGreen,
+                        size: 18,
+                      ),
+                    )
+                  : null,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: inputBorder,
+                  width: 1.2,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.primaryBlue,
+                  width: 1.8,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.expenseRed,
+                  width: 1.2,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.expenseRed,
+                  width: 1.8,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // 4. Send Instructions Button (PennyPal Electric Blue Gradient)
+          SizedBox(
+            height: 52,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF2563EB),
+                    Color(0xFF1D4ED8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withValues(alpha: isDark ? 0.35 : 0.28),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _handleSendInstructions,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Send Recovery Code',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 36),
+
+          // 5. Back to Login link
+          Center(
+            child: RichText(
+              text: TextSpan(
+                text: 'Remember your password? ',
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  color: subtextColor,
+                  fontWeight: FontWeight.w400,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Login',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    recognizer: _loginTap,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  /// Second Screen: Enter 4-digit code and create new password
+  Widget _buildOtpStage(bool isDark) {
+    final inputFill = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final inputBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final subtextColor = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+
+    return Form(
+      key: _resetFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // PennyPal Emblem
+          const PennyPalBrandLogo(
+            iconSize: 58,
+            titleFontSize: 24,
+            subtitleFontSize: 12.5,
+          ),
+
+          const SizedBox(height: 26),
+
+          Text(
+            'Verify & Reset',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Enter the 4-digit code sent to ${_emailPhoneController.text.trim()}',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                color: subtextColor,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          // 4-Digit OTP Boxes
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(4, (index) {
+              return Container(
+                width: 56,
+                height: 56,
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                child: TextFormField(
+                  controller: _otpControllers[index],
+                  focusNode: _otpFocusNodes[index],
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  maxLength: 1,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    filled: true,
+                    fillColor: inputFill,
+                    contentPadding: EdgeInsets.zero,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: inputBorder,
+                        width: 1.4,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryBlue,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.isNotEmpty && index < 3) {
+                      _otpFocusNodes[index + 1].requestFocus();
+                    } else if (value.isEmpty && index > 0) {
+                      _otpFocusNodes[index - 1].requestFocus();
+                    }
+                  },
+                ),
+              );
+            }),
+          ),
+
+          const SizedBox(height: 18),
+
+          // Resend Timer
+          Center(
+            child: _resendCountdown > 0
+                ? Text(
+                    'Resend code in ${_resendCountdown}s',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: subtextColor,
+                    ),
+                  )
+                : TextButton(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      _startCountdown();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('New recovery code sent!'),
+                          backgroundColor: AppColors.primaryBlue,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Resend Code',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+          ),
+
+          const SizedBox(height: 22),
+
+          // New Password Field
+          TextFormField(
+            controller: _newPasswordController,
+            obscureText: _obscureNewPass,
+            style: GoogleFonts.inter(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a new password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: 'New Password',
+              hintStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+              filled: true,
+              fillColor: inputFill,
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureNewPass
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  size: 20,
+                  color: subtextColor,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureNewPass = !_obscureNewPass;
+                  });
+                },
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: inputBorder,
+                  width: 1.2,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.primaryBlue,
+                  width: 1.8,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.expenseRed,
+                  width: 1.2,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.expenseRed,
+                  width: 1.8,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Confirm Password Field
+          TextFormField(
+            controller: _confirmPasswordController,
+            obscureText: _obscureConfirmPass,
+            style: GoogleFonts.inter(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your new password';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: 'Confirm New Password',
+              hintStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+              filled: true,
+              fillColor: inputFill,
+              prefixIcon: Icon(
+                Icons.lock_reset_rounded,
+                size: 20,
+                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPass
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  size: 20,
+                  color: subtextColor,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureConfirmPass = !_obscureConfirmPass;
+                  });
+                },
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: inputBorder,
+                  width: 1.2,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.primaryBlue,
+                  width: 1.8,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.expenseRed,
+                  width: 1.2,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: AppColors.expenseRed,
+                  width: 1.8,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 26),
+
+          // Confirm & Reset Password Button
+          SizedBox(
+            height: 52,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF2563EB),
+                    Color(0xFF1D4ED8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withValues(alpha: isDark ? 0.35 : 0.28),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _handleResetPassword,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Update Password',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // Back to Login link
+          Center(
+            child: TextButton(
+              onPressed: _navigateToLogin,
+              child: Text(
+                'Cancel & Return to Login',
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: subtextColor,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
   }
 }

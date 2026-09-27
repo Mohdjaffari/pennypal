@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 class SettingsSwitchTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
   final Color? iconColor;
@@ -13,6 +14,7 @@ class SettingsSwitchTile extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.value,
     required this.onChanged,
     this.iconColor,
@@ -37,12 +39,21 @@ class SettingsSwitchTile extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
+        style: TextStyle(
+          color: AppColors.textPrimaryOf(context),
           fontSize: 14.5,
           fontWeight: FontWeight.w600,
         ),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: TextStyle(
+                color: AppColors.textSecondaryOf(context),
+                fontSize: 12,
+              ),
+            )
+          : null,
       trailing: Switch(
         value: value,
         activeThumbColor: Colors.white,

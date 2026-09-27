@@ -1,202 +1,214 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
-/// Top profile card with user avatar, name, student badge, and financial summary chips.
+/// Top profile header — displays avatar, name, and role.
+///
+/// Supports three avatar states:
+///   1. User-picked image from device (via [profileImagePath])
+///   2. Bundled asset fallback (assets/images/img2.jpg)
+///   3. Initials gradient avatar if both image sources fail
+///
+/// The camera badge at bottom-right now calls [onEditPhoto] (full photo picker)
+/// while the edit pencil badge calls [onEdit] (edit name/role).
 class ProfileHeaderCard extends StatelessWidget {
   final String userName;
   final String userRole;
-  final String balance;
-  final String savings;
+
+  /// Absolute path to a user-picked image file, or null.
+  final String? profileImagePath;
+
+  /// Opens the name/role edit sheet.
   final VoidCallback onEdit;
+
+  /// Opens the photo source picker (camera / gallery).
+  final VoidCallback? onEditPhoto;
 
   const ProfileHeaderCard({
     super.key,
     required this.userName,
-    required this.userRole,
-    this.balance = 'Rs. 12,450',
-    this.savings = 'Rs. 3,200',
+    this.userRole = 'Student',
+    this.profileImagePath,
     required this.onEdit,
+    this.onEditPhoto,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Avatar Stack with Verified Badge & Edit button
+        // 1. Avatar with pink accent ring
         Stack(
           alignment: Alignment.center,
           children: [
+            // Outer glow ring
             Container(
-              width: 94,
-              height: 94,
+              width: 108,
+              height: 108,
               decoration: BoxDecoration(
-                gradient: AppColors.blueGradient,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 4),
+                gradient: const SweepGradient(
+                  colors: [
+                    AppColors.primaryPink,
+                    AppColors.primaryBlue,
+                    AppColors.primaryPink,
+                  ],
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.25),
-                    blurRadius: 16,
+                    color: AppColors.primaryPink.withValues(alpha: 0.25),
+                    blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
                 ],
               ),
-              child: Center(
-                child: Text(
-                  userName.isNotEmpty ? userName[0].toUpperCase() : 'J',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.w800,
-                  ),
+              padding: const EdgeInsets.all(3),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.surfaceOf(context),
+                ),
+                padding: const EdgeInsets.all(3),
+                child: ClipOval(
+                  child: _buildAvatarImage(context),
                 ),
               ),
             ),
+
+            // Camera badge — opens photo picker
             Positioned(
               bottom: 2,
               right: 2,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onEdit,
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryPink,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2.5),
+              child: GestureDetector(
+                onTap: onEditPhoto ?? onEdit,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryPink,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.surfaceOf(context),
+                      width: 2.5,
                     ),
-                    child: const Icon(
-                      Icons.edit_rounded,
-                      color: Colors.white,
-                      size: 14,
-                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryPink.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    color: Colors.white,
+                    size: 14,
                   ),
                 ),
               ),
             ),
           ],
         ),
+
         const SizedBox(height: 14),
 
-        // User Name
+        // 2. User Name
         Text(
           userName,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            color: AppColors.textPrimaryOf(context),
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+            letterSpacing: -0.4,
           ),
         ),
+
         const SizedBox(height: 4),
 
-        // Student Role Badge
+        // 3. Role Chip
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlueLight,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.primaryBlue.withValues(
+              alpha: AppColors.isDark(context) ? 0.2 : 0.08,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.2),
+            ),
           ),
           child: Text(
             userRole,
-            style: const TextStyle(
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
               color: AppColors.primaryBlue,
-              fontSize: 12,
+              fontSize: 12.5,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        const SizedBox(height: 18),
 
-        // Summary Chips Row (Balance & Saved)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildSummaryChip(
-                  label: 'Total Balance',
-                  value: balance,
-                  icon: Icons.account_balance_wallet_rounded,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSummaryChip(
-                  label: 'Total Savings',
-                  value: savings,
-                  icon: Icons.savings_rounded,
-                  color: AppColors.successGreen,
-                ),
-              ),
-            ],
+        const SizedBox(height: 10),
+
+        // 4. Edit profile text button
+        TextButton.icon(
+          onPressed: onEdit,
+          icon: const Icon(Icons.edit_rounded, size: 14),
+          label: const Text('Edit Profile'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.textSecondaryOf(context),
+            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSummaryChip({
-    required String label,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
+  /// Builds the correct avatar widget: picked file → asset fallback → initials.
+  Widget _buildAvatarImage(BuildContext context) {
+    // Priority 1: user-picked image from device storage
+    if (profileImagePath != null && profileImagePath!.isNotEmpty) {
+      final file = File(profileImagePath!);
+      return Image.file(
+        file,
+        width: 96,
+        height: 96,
+        fit: BoxFit.cover,
+        errorBuilder: (ctx, e, s) => _buildInitialsAvatar(context),
+      );
+    }
+
+    // Priority 2: bundled asset
+    return Image.asset(
+      'assets/images/img2.jpg',
+      width: 96,
+      height: 96,
+      fit: BoxFit.cover,
+      alignment: const Alignment(0, -0.6),
+      errorBuilder: (ctx, e, s) => _buildInitialsAvatar(context),
+    );
+  }
+
+  Widget _buildInitialsAvatar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+      width: 96,
+      height: 96,
+      decoration: const BoxDecoration(
+        gradient: AppColors.blueGradient,
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
+      alignment: Alignment.center,
+      child: Text(
+        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+        style: GoogleFonts.inter(
+          color: Colors.white,
+          fontSize: 36,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

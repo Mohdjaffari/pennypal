@@ -7,15 +7,19 @@ import '../../models/saving_goal_model.dart';
 class SavingGoalCard extends StatelessWidget {
   final SavingGoalModel goal;
   final VoidCallback? onTap;
+  final VoidCallback? onAddMoney;
 
   const SavingGoalCard({
     super.key,
     required this.goal,
     this.onTap,
+    this.onAddMoney,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -24,9 +28,9 @@ class SavingGoalCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: AppColors.borderOf(context), width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.025),
@@ -47,7 +51,9 @@ class SavingGoalCard extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: goal.backgroundColor,
+                      color: isDark
+                          ? goal.color.withValues(alpha: 0.2)
+                          : goal.backgroundColor,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
@@ -65,8 +71,8 @@ class SavingGoalCard extends StatelessWidget {
                       children: [
                         Text(
                           goal.title,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: AppColors.textPrimaryOf(context),
                             fontSize: 15.5,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.2,
@@ -76,8 +82,8 @@ class SavingGoalCard extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           goal.formattedProgressOverview,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: AppColors.textSecondaryOf(context),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -90,7 +96,7 @@ class SavingGoalCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: goal.color.withValues(alpha: 0.1),
+                      color: goal.color.withValues(alpha: isDark ? 0.2 : 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -113,36 +119,70 @@ class SavingGoalCard extends StatelessWidget {
                   height: 8,
                   child: LinearProgressIndicator(
                     value: goal.progressRatio,
-                    backgroundColor: AppColors.background,
+                    backgroundColor: AppColors.surfaceMutedOf(context),
                     valueColor: AlwaysStoppedAnimation<Color>(goal.color),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
 
-              // Bottom Info: Monthly target & Target Date
+              // Bottom Info: Monthly target & Target Date & Add Money button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (goal.monthlyContribution > 0)
-                    Text(
-                      goal.formattedMonthlyContribution,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (goal.monthlyContribution > 0)
+                        Text(
+                          goal.formattedMonthlyContribution,
+                          style: TextStyle(
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      Text(
+                        'Target: ${goal.targetDate}',
+                        style: TextStyle(
+                          color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    )
-                  else
-                    const SizedBox.shrink(),
-                  Text(
-                    'Target: ${goal.targetDate}',
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    ],
                   ),
+                  if (onAddMoney != null)
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onAddMoney,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: goal.color.withValues(alpha: isDark ? 0.2 : 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: goal.color.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add_rounded, size: 14, color: goal.color),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Add Money',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: goal.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ],

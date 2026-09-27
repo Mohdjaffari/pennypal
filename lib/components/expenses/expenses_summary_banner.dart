@@ -20,16 +20,17 @@ class ExpensesSummaryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -43,8 +44,8 @@ class ExpensesSummaryBanner extends StatelessWidget {
             children: [
               Text(
                 'Total Expenses ($periodLabel)',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: AppColors.textSecondaryOf(context),
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -53,8 +54,8 @@ class ExpensesSummaryBanner extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: isTrendGood
-                      ? AppColors.successGreenLight
-                      : AppColors.expenseRedLight,
+                      ? (isDark ? AppColors.successGreen.withValues(alpha: 0.18) : AppColors.successGreenLight)
+                      : (isDark ? AppColors.expenseRed.withValues(alpha: 0.18) : AppColors.expenseRedLight),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -94,8 +95,8 @@ class ExpensesSummaryBanner extends StatelessWidget {
             children: [
               Text(
                 'Rs. ${totalAmount.toInt()}',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: AppColors.textPrimaryOf(context),
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.8,
@@ -104,8 +105,8 @@ class ExpensesSummaryBanner extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 '$transactionCount recorded',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
+                style: TextStyle(
+                  color: AppColors.textSecondaryOf(context),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),

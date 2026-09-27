@@ -58,14 +58,20 @@ class CategoryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
@@ -84,7 +90,7 @@ class CategoryPickerSheet extends StatelessWidget {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: borderColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -94,16 +100,16 @@ class CategoryPickerSheet extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Budget Category',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                    icon: Icon(Icons.close_rounded, color: textSecondary),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -114,13 +120,18 @@ class CategoryPickerSheet extends StatelessWidget {
                 final isSelected = cat['name'] == selectedCategory;
                 return ListTile(
                   onTap: () => Navigator.of(context).pop(cat),
+                  tileColor: isSelected
+                      ? (isDark ? AppColors.darkSurfaceMuted : AppColors.primaryBlueLight)
+                      : Colors.transparent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   leading: Container(
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: cat['bgColor'] as Color,
+                      color: isDark
+                          ? (cat['color'] as Color).withValues(alpha: 0.2)
+                          : (cat['bgColor'] as Color),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -134,7 +145,7 @@ class CategoryPickerSheet extends StatelessWidget {
                     style: TextStyle(
                       color: isSelected
                           ? AppColors.primaryBlue
-                          : AppColors.textPrimary,
+                          : textPrimary,
                       fontSize: 14.5,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),

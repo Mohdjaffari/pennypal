@@ -86,7 +86,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     final filtered = _filteredFaqs;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
         title: 'Help & Support 🛟',
         subtitle: 'FAQs, guides & instant answers',
@@ -112,12 +112,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Frequently Asked Questions',
                     style: TextStyle(
                       fontSize: 16.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryOf(context),
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -157,9 +157,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -171,8 +171,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: (val) => setState(() => _searchQuery = val),
-        style: const TextStyle(
-          color: AppColors.textPrimary,
+        style: TextStyle(
+          color: AppColors.textPrimaryOf(context),
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
@@ -261,9 +261,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.surfaceOf(context),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: AppColors.borderOf(context)),
             ),
             child: Column(
               children: [
@@ -279,10 +279,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 const SizedBox(height: 8),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryOf(context),
                   ),
                 ),
               ],
@@ -299,9 +299,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -329,18 +329,18 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ),
           title: Text(
             faq['q']!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryOf(context),
             ),
           ),
           children: [
             Text(
               faq['a']!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryOf(context),
                 height: 1.45,
               ),
             ),
@@ -385,25 +385,25 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
-        children: const [
+        children: [
           Icon(Icons.search_off_rounded,
-              size: 40, color: AppColors.textSecondary),
-          SizedBox(height: 10),
+              size: 40, color: AppColors.textSecondaryOf(context)),
+          const SizedBox(height: 10),
           Text('No matching questions found',
               style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary)),
-          SizedBox(height: 4),
+                  color: AppColors.textPrimaryOf(context))),
+          const SizedBox(height: 4),
           Text('Try searching with different terms or contact support directly.',
               textAlign: TextAlign.center,
               style:
-                  TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+                  TextStyle(fontSize: 12.5, color: AppColors.textSecondaryOf(context))),
         ],
       ),
     );
@@ -414,34 +414,34 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.headset_mic_rounded,
+            children: [
+              const Icon(Icons.headset_mic_rounded,
                   color: AppColors.primaryPink, size: 24),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Text(
                 'Still need assistance?',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Can’t find the answer to your budgeting problem? Our student desk is ready to help 24/7.',
             style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryOf(context),
               height: 1.4,
             ),
           ),

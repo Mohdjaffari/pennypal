@@ -17,13 +17,15 @@ class BarChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 240,
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: AppColors.borderOf(context), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.025),
@@ -41,16 +43,16 @@ class BarChartCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: AppColors.textSecondaryOf(context),
                     fontSize: 12.5,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   subtitle!,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -97,8 +99,8 @@ class BarChartCard extends StatelessWidget {
                         // Label
                         Text(
                           point.label,
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
+                          style: TextStyle(
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),

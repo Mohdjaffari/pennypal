@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/language_service.dart';
 
 /// Card displaying the user's financial health score and savings rate chart.
 class FinancialHealthChartCard extends StatelessWidget {
@@ -17,16 +18,18 @@ class FinancialHealthChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: AppColors.borderOf(context), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.025),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -39,10 +42,10 @@ class FinancialHealthChartCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Financial Health',
+              Text(
+                context.tr('financial_health'),
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -51,17 +54,17 @@ class FinancialHealthChartCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.successGreenLight,
+                  color: AppColors.successGreenLight.withValues(alpha: isDark ? 0.2 : 1.0),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.trending_up_rounded, color: AppColors.successGreen, size: 14),
-                    SizedBox(width: 4),
+                    const Icon(Icons.trending_up_rounded, color: AppColors.successGreen, size: 14),
+                    const SizedBox(width: 4),
                     Text(
-                      'Excellent',
-                      style: TextStyle(
+                      context.tr('excellent'),
+                      style: const TextStyle(
                         color: AppColors.successGreen,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
@@ -89,6 +92,7 @@ class FinancialHealthChartCard extends StatelessWidget {
                       painter: _HealthScoreGaugePainter(
                         progress: score / 100,
                         color: AppColors.primaryBlue,
+                        isDark: isDark,
                       ),
                     ),
                     Column(
@@ -96,17 +100,17 @@ class FinancialHealthChartCard extends StatelessWidget {
                       children: [
                         Text(
                           '$score',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: AppColors.textPrimaryOf(context),
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const Text(
+                        Text(
                           '/ 100',
                           style: TextStyle(
-                            color: AppColors.textMuted,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                           ),
@@ -123,14 +127,16 @@ class FinancialHealthChartCard extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildMetricRow(
-                      label: 'Savings Rate',
+                      context: context,
+                      label: context.tr('savings_rate'),
                       value: '${(savingsRate * 100).toInt()}%',
                       progress: savingsRate,
                       color: AppColors.primaryPink,
                     ),
                     const SizedBox(height: 10),
                     _buildMetricRow(
-                      label: 'Budget Used',
+                      context: context,
+                      label: context.tr('budget_used'),
                       value: '${(budgetAdherence * 100).toInt()}%',
                       progress: budgetAdherence,
                       color: AppColors.primaryBlue,
@@ -146,6 +152,7 @@ class FinancialHealthChartCard extends StatelessWidget {
   }
 
   Widget _buildMetricRow({
+    required BuildContext context,
     required String label,
     required String value,
     required double progress,
@@ -159,8 +166,8 @@ class FinancialHealthChartCard extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: AppColors.textSecondaryOf(context),
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -180,7 +187,7 @@ class FinancialHealthChartCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: progress,
-            backgroundColor: AppColors.background,
+            backgroundColor: AppColors.surfaceMutedOf(context),
             valueColor: AlwaysStoppedAnimation<Color>(color),
             minHeight: 6,
           ),
@@ -194,10 +201,12 @@ class FinancialHealthChartCard extends StatelessWidget {
 class _HealthScoreGaugePainter extends CustomPainter {
   final double progress;
   final Color color;
+  final bool isDark;
 
   const _HealthScoreGaugePainter({
     required this.progress,
     required this.color,
+    this.isDark = false,
   });
 
   @override
@@ -208,7 +217,7 @@ class _HealthScoreGaugePainter extends CustomPainter {
 
     // Background track ring
     final trackPaint = Paint()
-      ..color = color.withValues(alpha: 0.12)
+      ..color = color.withValues(alpha: isDark ? 0.22 : 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;

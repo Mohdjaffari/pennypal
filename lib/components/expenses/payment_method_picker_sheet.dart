@@ -81,13 +81,19 @@ class PaymentMethodPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.65,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
         top: false,
@@ -102,7 +108,7 @@ class PaymentMethodPickerSheet extends StatelessWidget {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: borderColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -114,25 +120,25 @@ class PaymentMethodPickerSheet extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Payment Method',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: textPrimary,
                       letterSpacing: -0.3,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: AppColors.textSecondary, size: 22),
+                    icon: Icon(Icons.close_rounded,
+                        color: textSecondary, size: 22),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
             ),
 
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: borderColor),
 
             // List of Payment Methods
             Flexible(
@@ -155,13 +161,13 @@ class PaymentMethodPickerSheet extends StatelessWidget {
                             horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primaryPink.withValues(alpha: 0.05)
-                              : Colors.transparent,
+                              ? AppColors.primaryPink.withValues(alpha: isDark ? 0.2 : 0.05)
+                              : (isDark ? AppColors.darkSurfaceMuted.withValues(alpha: 0.35) : Colors.transparent),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.primaryPink
-                                : Colors.transparent,
+                                : (isDark ? borderColor : Colors.transparent),
                             width: 1.5,
                           ),
                         ),
@@ -172,7 +178,9 @@ class PaymentMethodPickerSheet extends StatelessWidget {
                               width: 42,
                               height: 42,
                               decoration: BoxDecoration(
-                                color: method.backgroundColor,
+                                color: isDark
+                                    ? method.color.withValues(alpha: 0.2)
+                                    : method.backgroundColor,
                                 borderRadius: BorderRadius.circular(13),
                               ),
                               child: Icon(
@@ -193,7 +201,7 @@ class PaymentMethodPickerSheet extends StatelessWidget {
                                     style: TextStyle(
                                       color: isSelected
                                           ? AppColors.primaryPink
-                                          : AppColors.textPrimary,
+                                          : textPrimary,
                                       fontSize: 15,
                                       fontWeight: isSelected
                                           ? FontWeight.w700
@@ -203,8 +211,8 @@ class PaymentMethodPickerSheet extends StatelessWidget {
                                   const SizedBox(height: 2),
                                   Text(
                                     method.subtitle,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                    style: TextStyle(
+                                      color: textSecondary,
                                       fontSize: 12,
                                     ),
                                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/language_service.dart';
 
 /// Modal bottom sheet for selecting the application language.
 class LanguageSelectorSheet extends StatelessWidget {
@@ -10,13 +11,7 @@ class LanguageSelectorSheet extends StatelessWidget {
     required this.currentLanguage,
   });
 
-  static const List<Map<String, String>> languages = [
-    {'name': 'English', 'native': 'English', 'code': 'en'},
-    {'name': 'Urdu', 'native': 'اردو', 'code': 'ur'},
-    {'name': 'Arabic', 'native': 'العربية', 'code': 'ar'},
-    {'name': 'Spanish', 'native': 'Español', 'code': 'es'},
-    {'name': 'French', 'native': 'Français', 'code': 'fr'},
-  ];
+  static List<Map<String, String>> get languages => LanguageService.supportedLanguages;
 
   static Future<String?> show(BuildContext context, String currentLanguage) {
     return showModalBottomSheet<String>(
@@ -29,14 +24,20 @@ class LanguageSelectorSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
@@ -55,7 +56,7 @@ class LanguageSelectorSheet extends StatelessWidget {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: borderColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -65,16 +66,16 @@ class LanguageSelectorSheet extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Select Language',
+                  Text(
+                    context.tr('select_language'),
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                    icon: Icon(Icons.close_rounded, color: textSecondary),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -85,6 +86,9 @@ class LanguageSelectorSheet extends StatelessWidget {
                 final isSelected = lang['name'] == currentLanguage;
                 return ListTile(
                   onTap: () => Navigator.of(context).pop(lang['name']),
+                  tileColor: isSelected
+                      ? (isDark ? AppColors.darkSurfaceMuted : AppColors.primaryBlueLight)
+                      : Colors.transparent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   leading: Container(
@@ -92,8 +96,8 @@ class LanguageSelectorSheet extends StatelessWidget {
                     height: 36,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primaryBlueLight
-                          : AppColors.background,
+                          ? (isDark ? AppColors.primaryBlue.withValues(alpha: 0.25) : AppColors.primaryBlueLight)
+                          : (isDark ? AppColors.darkSurfaceMuted : AppColors.background),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -102,7 +106,7 @@ class LanguageSelectorSheet extends StatelessWidget {
                         style: TextStyle(
                           color: isSelected
                               ? AppColors.primaryBlue
-                              : AppColors.textSecondary,
+                              : textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
@@ -114,15 +118,15 @@ class LanguageSelectorSheet extends StatelessWidget {
                     style: TextStyle(
                       color: isSelected
                           ? AppColors.primaryBlue
-                          : AppColors.textPrimary,
+                          : textPrimary,
                       fontSize: 14.5,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
                   subtitle: Text(
                     lang['native']!,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
+                    style: TextStyle(
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
                       fontSize: 12,
                     ),
                   ),

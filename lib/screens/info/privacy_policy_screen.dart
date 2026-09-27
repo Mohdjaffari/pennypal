@@ -37,21 +37,21 @@ class PrivacyPolicyScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceOf(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Text(
+        title: Text(
           'Clear Cached Data?',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryOf(context),
           ),
         ),
-        content: const Text(
+        content: Text(
           'This will purge temporary cached images, theme states, and search logs. Your main transaction records will NOT be deleted.',
           style: TextStyle(
             fontSize: 13.5,
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondaryOf(context),
             height: 1.45,
           ),
         ),
@@ -90,7 +90,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
         title: 'Privacy Policy 🛡️',
         subtitle: 'Your data, your control',
@@ -110,6 +110,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
               // 2. Section 1: What We Collect
               _buildPolicyCard(
+                context: context,
                 icon: Icons.checklist_rounded,
                 color: AppColors.primaryBlue,
                 title: '1. What We Collect',
@@ -120,6 +121,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
               // 3. Section 2: Local-First Architecture
               _buildPolicyCard(
+                context: context,
                 icon: Icons.storage_rounded,
                 color: AppColors.successGreen,
                 title: '2. Local-First Storage Guarantee',
@@ -130,6 +132,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
               // 4. Section 3: Device Permissions Explained
               _buildPolicyCard(
+                context: context,
                 icon: Icons.security_rounded,
                 color: AppColors.shoppingOrange,
                 title: '3. Device Permissions',
@@ -140,6 +143,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
               // 5. Section 4: Data Retention & Right to Delete
               _buildPolicyCard(
+                context: context,
                 icon: Icons.delete_sweep_rounded,
                 color: AppColors.primaryPink,
                 title: '4. Your Right to Delete',
@@ -149,12 +153,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // 6. Data Management Actions (Export, Clear Cache)
-              const Text(
+              Text(
                 'Data Management & Actions',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
               const SizedBox(height: 12),
@@ -207,6 +211,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   }
 
   Widget _buildPolicyCard({
+    required BuildContext context,
     required IconData icon,
     required Color color,
     required String title,
@@ -215,9 +220,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,10 +242,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryOf(context),
                   ),
                 ),
               ),
@@ -249,9 +254,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryOf(context),
               height: 1.45,
             ),
           ),

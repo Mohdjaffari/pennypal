@@ -110,6 +110,12 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.surface;
+    final inputFill = isDark ? AppColors.darkSurfaceMuted : AppColors.background;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -119,9 +125,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
         top: 20,
         bottom: bottomInset + 20,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
@@ -137,7 +143,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: borderColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -148,16 +154,16 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Add Expense',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close_rounded, color: textSecondary),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -165,10 +171,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             const SizedBox(height: 16),
 
             // Amount Input
-            const Text(
+            Text(
               'Amount',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -177,8 +183,8 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
               ),
@@ -190,15 +196,16 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   fontWeight: FontWeight.w700,
                 ),
                 hintText: '0',
+                hintStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: inputFill,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: borderColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: borderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -210,10 +217,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             const SizedBox(height: 16),
 
             // Category Selector
-            const Text(
+            Text(
               'Category',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -239,16 +246,16 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   ),
                   selected: isSelected,
                   selectedColor: AppColors.primaryBlue,
-                  backgroundColor: AppColors.background,
+                  backgroundColor: inputFill,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    color: isSelected ? Colors.white : textPrimary,
                     fontSize: 12.5,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: isSelected ? Colors.transparent : AppColors.border,
+                      color: isSelected ? Colors.transparent : borderColor,
                     ),
                   ),
                   onSelected: (selected) {
@@ -262,10 +269,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             const SizedBox(height: 16),
 
             // Payment Method
-            const Text(
+            Text(
               'Payment Method',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -280,16 +287,16 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                     label: Text(method),
                     selected: isSelected,
                     selectedColor: AppColors.primaryBlue,
-                    backgroundColor: AppColors.background,
+                    backgroundColor: inputFill,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      color: isSelected ? Colors.white : textPrimary,
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: isSelected ? Colors.transparent : AppColors.border,
+                        color: isSelected ? Colors.transparent : borderColor,
                       ),
                     ),
                     onSelected: (selected) {
@@ -304,10 +311,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             const SizedBox(height: 16),
 
             // Note (Optional)
-            const Text(
+            Text(
               'Note (Optional)',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -315,18 +322,19 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
             const SizedBox(height: 6),
             TextField(
               controller: _noteController,
+              style: TextStyle(color: textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'e.g. Lunch with team or Grocery run',
-                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                hintStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted, fontSize: 13),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: inputFill,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: borderColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: borderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),

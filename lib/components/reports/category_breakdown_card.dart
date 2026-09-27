@@ -21,8 +21,8 @@ class CategoryBreakdownCard extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: AppColors.textPrimaryOf(context),
             fontSize: 16.5,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.2,
@@ -32,9 +32,9 @@ class CategoryBreakdownCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: AppColors.borderOf(context), width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.025),
@@ -59,9 +59,9 @@ class CategoryBreakdownCard extends StatelessWidget {
                         strokeWidth: 16.0,
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.pie_chart_rounded,
-                      color: AppColors.textMuted,
+                      color: AppColors.textSecondaryOf(context),
                       size: 26,
                     ),
                   ],
@@ -74,7 +74,7 @@ class CategoryBreakdownCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: categories.map((cat) => _buildLegendItem(cat)).toList(),
+                  children: categories.map((cat) => _buildLegendItem(context, cat)).toList(),
                 ),
               ),
             ],
@@ -84,7 +84,7 @@ class CategoryBreakdownCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendItem(CategorySpendingData category) {
+  Widget _buildLegendItem(BuildContext context, CategorySpendingData category) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
@@ -104,8 +104,8 @@ class CategoryBreakdownCard extends StatelessWidget {
           Expanded(
             child: Text(
               category.name,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: AppColors.textPrimaryOf(context),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -117,8 +117,8 @@ class CategoryBreakdownCard extends StatelessWidget {
           // Percentage Text
           Text(
             '${category.percentageInt}%',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: AppColors.textSecondaryOf(context),
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),

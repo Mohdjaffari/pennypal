@@ -110,19 +110,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.backgroundOf(context),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimaryOf(context)),
           onPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
+        title: Text(
           'Reports',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryOf(context),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.3,
@@ -130,7 +130,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: AppColors.textPrimary, size: 21),
+            icon: Icon(Icons.share_outlined, color: AppColors.textPrimaryOf(context), size: 21),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

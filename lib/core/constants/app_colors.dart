@@ -36,6 +36,23 @@ class AppColors {
   static const Color purple = Color(0xFF7B61FF);
   static const Color purpleLight = Color(0xFFF3EFFF);
 
+  // Luxury Dark Mode Palette (Deep Astral Navy / Midnight Sapphire - NOT black)
+  static const Color darkBackground = Color(0xFF111726); // Rich oceanic midnight navy
+  static const Color darkSurface = Color(0xFF1A2238);    // Lush indigo-navy card surface
+  static const Color darkSurfaceMuted = Color(0xFF232D4A); // Elevated inputs & chips
+  static const Color darkBorder = Color(0xFF2C395E);     // Luminous soft sapphire border
+
+  // Dark Typography
+  static const Color darkTextPrimary = Color(0xFFF1F5FD); // Crisp ice white
+  static const Color darkTextSecondary = Color(0xFFA2B4D6); // Soft silver periwinkle
+  static const Color darkTextMuted = Color(0xFF6E80A8);     // Twilight slate
+
+  // Dark Mode Accent Variations
+  static const Color darkPrimaryBlueLight = Color(0xFF212E52);
+  static const Color darkPrimaryPinkLight = Color(0xFF381F33);
+  static const Color darkSuccessGreenLight = Color(0xFF18382C);
+  static const Color darkExpenseRedLight = Color(0xFF3B1D25);
+
   // Gradients
   static const LinearGradient pinkGradient = LinearGradient(
     colors: [primaryPink, primaryPinkDark],
@@ -48,4 +65,33 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  // Dynamic Theme Resolvers
+  static bool isDark(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
+  static Color backgroundOf(BuildContext context) =>
+      isDark(context) ? darkBackground : background;
+
+  static Color surfaceOf(BuildContext context) =>
+      isDark(context) ? darkSurface : surface;
+
+  static Color surfaceMutedOf(BuildContext context) =>
+      isDark(context) ? darkSurfaceMuted : surfaceMuted;
+
+  static Color borderOf(BuildContext context) =>
+      isDark(context) ? darkBorder : border;
+
+  static Color textPrimaryOf(BuildContext context) =>
+      isDark(context) ? darkTextPrimary : textPrimary;
+
+  static Color textSecondaryOf(BuildContext context) =>
+      isDark(context) ? darkTextSecondary : textSecondary;
+
+  static Color textMutedOf(BuildContext context) =>
+      isDark(context) ? darkTextMuted : textMuted;
+
+  static Color primaryBlueLightOf(BuildContext context) =>
+      isDark(context) ? darkPrimaryBlueLight : primaryBlueLight;
 }

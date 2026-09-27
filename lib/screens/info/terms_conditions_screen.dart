@@ -20,7 +20,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
         title: 'Terms of Service 📜',
         subtitle: 'Updated: September 2026',
@@ -108,9 +108,9 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -123,16 +123,16 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.verified_user_rounded,
+            children: [
+              const Icon(Icons.verified_user_rounded,
                   color: AppColors.primaryBlue, size: 22),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 'Key Takeaways (In Plain English)',
                 style: TextStyle(
                   fontSize: 15.5,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
             ],
@@ -161,9 +161,9 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryOf(context),
                 height: 1.4,
               ),
             ),
@@ -183,9 +183,9 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,10 +212,10 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryOf(context),
                   ),
                 ),
               ),
@@ -224,9 +224,9 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           const SizedBox(height: 10),
           Text(
             content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryOf(context),
               height: 1.45,
             ),
           ),
@@ -239,9 +239,9 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Row(
         children: [
@@ -253,12 +253,12 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
               setState(() => _agreed = val ?? true);
             },
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'I understand and accept the PennyPal terms of service and student privacy guidelines.',
               style: TextStyle(
                 fontSize: 12.5,
-                color: AppColors.textPrimary,
+                color: AppColors.textPrimaryOf(context),
                 fontWeight: FontWeight.w500,
               ),
             ),

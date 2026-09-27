@@ -29,16 +29,17 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -53,8 +54,8 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
             children: [
               Text(
                 _selectedChartTab == 0 ? 'Daily Spending' : 'Category Breakdown',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: AppColors.textPrimaryOf(context),
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -63,18 +64,20 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: AppColors.surfaceMutedOf(context),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.borderOf(context)),
                 ),
                 child: Row(
                   children: [
                     _chartTabItem(
+                      context: context,
                       index: 0,
                       icon: Icons.bar_chart_rounded,
                       label: 'Daily',
                     ),
                     _chartTabItem(
+                      context: context,
                       index: 1,
                       icon: Icons.pie_chart_outline_rounded,
                       label: 'Share',
@@ -90,8 +93,8 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: _selectedChartTab == 0
-                ? _buildDailyBarChart()
-                : _buildCategoryDonutChart(),
+                ? _buildDailyBarChart(context)
+                : _buildCategoryDonutChart(context),
           ),
         ],
       ),
@@ -99,11 +102,13 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
   }
 
   Widget _chartTabItem({
+    required BuildContext context,
     required int index,
     required IconData icon,
     required String label,
   }) {
     final isSelected = _selectedChartTab == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => setState(() {
         _selectedChartTab = index;
@@ -113,12 +118,12 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.surface : Colors.transparent,
+          color: isSelected ? AppColors.surfaceOf(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(9),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -137,7 +142,7 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
+                color: isSelected ? AppColors.textPrimaryOf(context) : AppColors.textMuted,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -149,7 +154,8 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
   }
 
   // 1. Daily Bar Chart View
-  Widget _buildDailyBarChart() {
+  Widget _buildDailyBarChart(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       key: const ValueKey('daily_bar'),
       children: [
@@ -158,7 +164,7 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primaryPinkLight,
+              color: isDark ? AppColors.primaryPink.withValues(alpha: 0.18) : AppColors.primaryPinkLight,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -240,7 +246,7 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
                       style: TextStyle(
                         color: isBarSelected
                             ? AppColors.primaryPink
-                            : AppColors.textSecondary,
+                            : AppColors.textSecondaryOf(context),
                         fontSize: 11.5,
                         fontWeight:
                             isBarSelected ? FontWeight.w700 : FontWeight.w500,
@@ -257,7 +263,7 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
   }
 
   // 2. Category Donut Chart View
-  Widget _buildCategoryDonutChart() {
+  Widget _buildCategoryDonutChart(BuildContext context) {
     return Column(
       key: const ValueKey('category_donut'),
       children: [
@@ -290,8 +296,8 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
                       ),
                       Text(
                         'Rs. ${(widget.totalSpent / 1000).toStringAsFixed(1)}k',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: AppColors.textPrimaryOf(context),
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                         ),
@@ -323,8 +329,8 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
                         Expanded(
                           child: Text(
                             cat.name,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: AppColors.textPrimaryOf(context),
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
                             ),
@@ -334,8 +340,8 @@ class _ExpensesChartSectionState extends State<ExpensesChartSection> {
                         ),
                         Text(
                           '${cat.percentageInt}%',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: AppColors.textSecondaryOf(context),
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),

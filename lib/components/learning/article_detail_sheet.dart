@@ -19,11 +19,18 @@ class ArticleDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final contentBg = AppColors.surfaceMutedOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
@@ -38,7 +45,7 @@ class ArticleDetailSheet extends StatelessWidget {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: borderColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -52,7 +59,7 @@ class ArticleDetailSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: article.backgroundColor,
+                  color: isDark ? article.imageColor.withValues(alpha: 0.2) : article.backgroundColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -65,7 +72,7 @@ class ArticleDetailSheet extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary, size: 20),
+                icon: Icon(Icons.close_rounded, color: textSecondary, size: 20),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -75,8 +82,8 @@ class ArticleDetailSheet extends StatelessWidget {
           // Title
           Text(
             article.title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.4,
@@ -87,11 +94,11 @@ class ArticleDetailSheet extends StatelessWidget {
           // Duration & Level Row
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, color: AppColors.textMuted, size: 14),
+              Icon(Icons.access_time_rounded, color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted, size: 14),
               const SizedBox(width: 4),
               Text(
                 '${article.duration} read',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+                style: TextStyle(color: textSecondary, fontSize: 12.5),
               ),
               const SizedBox(width: 12),
               const Icon(Icons.signal_cellular_alt_rounded, color: AppColors.primaryBlue, size: 14),
@@ -112,16 +119,16 @@ class ArticleDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: contentBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: borderColor),
             ),
             child: Text(
               article.summary.isNotEmpty
                   ? article.summary
                   : 'Consistent budgeting and mindful expenditure tracking are the foundations of long-term financial freedom. Start with small, realistic saving targets and review your progress weekly.',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: textPrimary,
                 fontSize: 14,
                 height: 1.5,
               ),

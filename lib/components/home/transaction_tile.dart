@@ -15,6 +15,8 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark(context);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -23,12 +25,12 @@ class TransactionTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: AppColors.borderOf(context), width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.015),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.015),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -41,7 +43,9 @@ class TransactionTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: transaction.backgroundColor,
+                  color: isDark
+                      ? transaction.color.withValues(alpha: 0.2)
+                      : transaction.backgroundColor,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
@@ -60,8 +64,8 @@ class TransactionTile extends StatelessWidget {
                   children: [
                     Text(
                       transaction.title,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: AppColors.textPrimaryOf(context),
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -71,8 +75,8 @@ class TransactionTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       transaction.date,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: AppColors.textSecondaryOf(context),
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -82,16 +86,19 @@ class TransactionTile extends StatelessWidget {
               ),
 
               // Transaction Amount
-              Text(
-                transaction.isExpense
-                    ? '- ${transaction.formattedAmount}'
-                    : '+ ${transaction.formattedAmount}',
-                style: TextStyle(
-                  color: transaction.isExpense
-                      ? AppColors.textPrimary
-                      : AppColors.successGreen,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text(
+                  transaction.isExpense
+                      ? '- ${transaction.formattedAmount}'
+                      : '+ ${transaction.formattedAmount}',
+                  style: TextStyle(
+                    color: transaction.isExpense
+                        ? AppColors.textPrimaryOf(context)
+                        : AppColors.successGreen,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

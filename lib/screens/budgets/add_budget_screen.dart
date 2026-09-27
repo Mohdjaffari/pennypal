@@ -4,13 +4,20 @@ import '../../models/budget_model.dart';
 import '../../components/budgets/category_picker_sheet.dart';
 import '../../components/home/home_header.dart';
 
-/// Screen allowing users to configure a new Category Budget Limit.
+import '../../core/repository/pennypal_repository.dart';
+
+/// Screen allowing users to configure a new Category Budget Limit or edit an existing one.
 /// Rebuilt with clean, human-readable architecture, real category selector,
-/// period choices, and form validation.
+/// live monthly expense calculation for the chosen category, and form validation.
 class AddBudgetScreen extends StatefulWidget {
   final ValueChanged<CategoryBudgetModel>? onBudgetSaved;
+  final CategoryBudgetModel? initialBudget;
 
-  const AddBudgetScreen({super.key, this.onBudgetSaved});
+  const AddBudgetScreen({
+    super.key,
+    this.onBudgetSaved,
+    this.initialBudget,
+  });
 
   @override
   State<AddBudgetScreen> createState() => _AddBudgetScreenState();
@@ -25,6 +32,62 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
   String _selectedPeriod = 'Monthly';
   bool _enableAlerts = true;
 
+  double _currentMonthSpending = 0.0;
+  int _currentMonthCount = 0;
+  bool _isLoadingSpending = false;
+
+  bool get isEditing => widget.initialBudget != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialBudget != null) {
+      final b = widget.initialBudget!;
+      _amountController.text = b.limitAmount % 1 == 0
+          ? b.limitAmount.toInt().toString()
+          : b.limitAmount.toStringAsFixed(2);
+
+      final match = CategoryPickerSheet.budgetCategories.firstWhere(
+        (c) => PennyPalRepository.isCategoryMatch(c['name'] as String, b.category),
+        orElse: () => {
+          'name': b.category,
+          'icon': b.icon,
+          'color': b.color,
+          'bgColor': b.backgroundColor,
+        },
+      );
+      _selectedCategory = match;
+    }
+    _loadCategorySpending();
+  }
+
+  Future<void> _loadCategorySpending() async {
+    setState(() => _isLoadingSpending = true);
+    final allTx = await PennyPalRepository.instance.getTransactions();
+    final now = DateTime.now();
+    double sum = 0.0;
+    int count = 0;
+    final catName = _selectedCategory['name'] as String;
+
+    for (final tx in allTx) {
+      if (!tx.isExpense) continue;
+      final d = tx.parsedDate;
+      if (d.year == now.year && d.month == now.month) {
+        if (PennyPalRepository.isCategoryMatch(catName, tx.category)) {
+          sum += tx.amount;
+          count++;
+        }
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _currentMonthSpending = sum;
+        _currentMonthCount = count;
+        _isLoadingSpending = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -38,6 +101,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     );
     if (chosen != null) {
       setState(() => _selectedCategory = chosen);
+      _loadCategorySpending();
     }
   }
 
@@ -51,9 +115,9 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
           maxHeight: MediaQuery.of(ctx).size.height * 0.85,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceOf(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
           top: false,
@@ -61,18 +125,24 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Select Period',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
               const SizedBox(height: 12),
               ...['Weekly', 'Monthly', 'Yearly'].map(
                 (p) => ListTile(
-                  title: Text(p),
+                  title: Text(
+                    p,
+                    style: TextStyle(
+                      color: AppColors.textPrimaryOf(context),
+                      fontWeight: _selectedPeriod == p ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
                   trailing: _selectedPeriod == p
                       ? const Icon(Icons.check, color: AppColors.primaryBlue)
                       : null,
@@ -89,31 +159,69 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     );
   }
 
-  void _submitBudget() {
+  Future<void> _submitBudget() async {
     if (!_formKey.currentState!.validate()) return;
 
     final limit = double.tryParse(_amountController.text.trim()) ?? 0.0;
-    final newBudget = CategoryBudgetModel(
-      id: 'b_${DateTime.now().millisecondsSinceEpoch}',
+    final budgetToSave = CategoryBudgetModel(
+      id: widget.initialBudget?.id ?? 'b_${DateTime.now().millisecondsSinceEpoch}',
       category: _selectedCategory['name'] as String,
-      spentAmount: 0.0,
+      spentAmount: widget.initialBudget?.spentAmount ?? _currentMonthSpending,
       limitAmount: limit,
       icon: _selectedCategory['icon'] as IconData,
       color: _selectedCategory['color'] as Color,
       backgroundColor: _selectedCategory['bgColor'] as Color,
     );
 
-    widget.onBudgetSaved?.call(newBudget);
-    Navigator.of(context).pop(newBudget);
+    await PennyPalRepository.instance.saveBudget(budgetToSave);
+    widget.onBudgetSaved?.call(budgetToSave);
+    if (mounted) {
+      Navigator.of(context).pop(budgetToSave);
+    }
+  }
+
+  Widget _buildCategorySpendInsight() {
+    final catName = _selectedCategory['name'] as String;
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.insights_rounded, size: 20, color: AppColors.primaryBlue),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _isLoadingSpending
+                  ? 'Calculating current spending...'
+                  : _currentMonthCount > 0
+                      ? 'You spent Rs. ${_currentMonthSpending.toInt()} across $_currentMonthCount expenses in $catName this month.'
+                      : 'No expenses recorded in $catName this month yet.',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimaryOf(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'Set New Budget 🎯',
-        subtitle: 'Define monthly limit & alert threshold',
+        title: isEditing ? 'Edit Budget Limit 🎯' : 'Set New Budget 🎯',
+        subtitle: isEditing
+            ? 'Adjust monthly spending limit for ${_selectedCategory['name']}'
+            : 'Define monthly limit & alert threshold',
         isBackNavigation: true,
         onMenuPressed: () => Navigator.of(context).maybePop(),
       ),
@@ -131,8 +239,8 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                 TextFormField(
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -164,19 +272,20 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                       readOnly: true,
                       key: ValueKey(_selectedCategory['name']),
                       initialValue: _selectedCategory['name'] as String,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: AppColors.textPrimaryOf(context),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: _inputDecoration(
                         hint: 'Select Category',
                         prefixIcon: _selectedCategory['icon'] as IconData,
-                        suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                        suffixIcon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondaryOf(context)),
                       ),
                     ),
                   ),
                 ),
+                _buildCategorySpendInsight(),
                 const SizedBox(height: 22),
 
                 // 3. Time Period Dropdown Field
@@ -189,15 +298,15 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                       readOnly: true,
                       key: ValueKey(_selectedPeriod),
                       initialValue: _selectedPeriod,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: AppColors.textPrimaryOf(context),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: _inputDecoration(
                         hint: 'Period',
                         prefixIcon: Icons.calendar_view_month_outlined,
-                        suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                        suffixIcon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondaryOf(context)),
                       ),
                     ),
                   ),
@@ -224,10 +333,10 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
       padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          color: AppColors.textSecondaryOf(context),
         ),
       ),
     );
@@ -241,9 +350,14 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+      hintStyle: TextStyle(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkTextSecondary
+            : AppColors.textMuted,
+        fontSize: 14,
+      ),
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: AppColors.surfaceOf(context),
       prefixText: prefixText,
       prefixStyle: const TextStyle(
         color: AppColors.primaryPink,
@@ -251,17 +365,17 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
         fontWeight: FontWeight.w700,
       ),
       prefixIcon: prefixIcon != null
-          ? Icon(prefixIcon, color: AppColors.textSecondary, size: 20)
+          ? Icon(prefixIcon, color: AppColors.textSecondaryOf(context), size: 20)
           : null,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -271,12 +385,13 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
   }
 
   Widget _buildAlertToggle() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: AppColors.borderOf(context), width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -286,7 +401,9 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryPinkLight,
+                  color: isDark
+                      ? AppColors.primaryPink.withValues(alpha: 0.2)
+                      : AppColors.primaryPinkLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -298,17 +415,17 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'Spending Alerts',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryOf(context),
                       fontSize: 14.5,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 2),
-                  Text(
+                  const SizedBox(height: 2),
+                  const Text(
                     'Warn me at 80% usage',
                     style: TextStyle(
                       color: AppColors.textMuted,
@@ -354,9 +471,9 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        child: const Text(
-          'Set Budget',
-          style: TextStyle(
+        child: Text(
+          isEditing ? 'Save Changes' : 'Set Budget',
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.w700,

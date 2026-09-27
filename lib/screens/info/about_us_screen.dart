@@ -14,7 +14,7 @@ class AboutUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
         title: 'About PennyPal 💜',
         subtitle: 'Smart financial buddy for students',
@@ -33,25 +33,25 @@ class AboutUsScreen extends StatelessWidget {
               const SizedBox(height: 22),
 
               // 2. Mission & Vision Statement
-              _buildMissionCard(),
+              _buildMissionCard(context),
               const SizedBox(height: 20),
 
               // 3. Impact Metrics (3-column counters)
-              _buildImpactMetrics(),
+              _buildImpactMetrics(context),
               const SizedBox(height: 26),
 
               // 4. Core Pillars
-              const Text(
+              Text(
                 'Why Students Trust PennyPal',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                   letterSpacing: -0.2,
                 ),
               ),
               const SizedBox(height: 12),
-              _buildPillarsList(),
+              _buildPillarsList(context),
               const SizedBox(height: 24),
 
               // 5. App & Version Information
@@ -65,16 +65,17 @@ class AboutUsScreen extends StatelessWidget {
   }
 
   Widget _buildBrandHeroCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -103,23 +104,23 @@ class AboutUsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'PennyPal',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryOf(context),
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Empowering Students to Master Their Money',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryOf(context),
               height: 1.4,
             ),
           ),
@@ -127,7 +128,7 @@ class AboutUsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primaryPinkLight,
+              color: isDark ? AppColors.primaryPink.withValues(alpha: 0.18) : AppColors.primaryPinkLight,
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
@@ -144,14 +145,15 @@ class AboutUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMissionCard() {
+  Widget _buildMissionCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,29 +164,29 @@ class AboutUsScreen extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlueLight,
+                  color: isDark ? AppColors.primaryBlue.withValues(alpha: 0.18) : AppColors.primaryBlueLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.lightbulb_outline_rounded,
                     color: AppColors.primaryBlue, size: 20),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Our Mission',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Managing money during college, hostel life, or early career should never feel overwhelming. PennyPal replaces complicated spreadsheets with an intuitive, private, and motivating mobile companion that helps you budget smart and achieve your dreams.',
             style: TextStyle(
               fontSize: 13.5,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryOf(context),
               height: 1.5,
             ),
           ),
@@ -193,35 +195,35 @@ class AboutUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImpactMetrics() {
+  Widget _buildImpactMetrics(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Row(
         children: [
-          _metricItem('50K+', 'Students', AppColors.primaryPink),
-          _divider(),
-          _metricItem('Rs. 14M+', 'Logged', AppColors.primaryBlue),
-          _divider(),
-          _metricItem('99.9%', 'Privacy', AppColors.successGreen),
+          _metricItem(context, '50K+', 'Students', AppColors.primaryPink),
+          _divider(context),
+          _metricItem(context, 'Rs. 14M+', 'Logged', AppColors.primaryBlue),
+          _divider(context),
+          _metricItem(context, '99.9%', 'Privacy', AppColors.successGreen),
         ],
       ),
     );
   }
 
-  Widget _divider() {
+  Widget _divider(BuildContext context) {
     return Container(
       width: 1,
       height: 32,
-      color: AppColors.border,
+      color: AppColors.borderOf(context),
     );
   }
 
-  Widget _metricItem(String number, String label, Color color) {
+  Widget _metricItem(BuildContext context, String number, String label, Color color) {
     return Expanded(
       child: Column(
         children: [
@@ -236,10 +238,10 @@ class AboutUsScreen extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryOf(context),
             ),
           ),
         ],
@@ -247,12 +249,13 @@ class AboutUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPillarsList() {
+  Widget _buildPillarsList(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final pillars = [
       {
         'icon': Icons.lock_outline_rounded,
         'color': AppColors.successGreen,
-        'bg': AppColors.successGreenLight,
+        'bg': isDark ? AppColors.successGreen.withValues(alpha: 0.18) : AppColors.successGreenLight,
         'title': '100% Privacy Focused',
         'subtitle':
             'Your financial entries are stored locally on your device. We do not sell or track your spending history.',
@@ -260,7 +263,7 @@ class AboutUsScreen extends StatelessWidget {
       {
         'icon': Icons.auto_awesome_rounded,
         'color': AppColors.purple,
-        'bg': AppColors.purpleLight,
+        'bg': isDark ? AppColors.purple.withValues(alpha: 0.18) : AppColors.purpleLight,
         'title': 'Penny AI Assistant',
         'subtitle':
             'Get real-time answers and smart budgeting recommendations designed specifically for allowance management.',
@@ -268,7 +271,7 @@ class AboutUsScreen extends StatelessWidget {
       {
         'icon': Icons.track_changes_rounded,
         'color': AppColors.primaryPink,
-        'bg': AppColors.primaryPinkLight,
+        'bg': isDark ? AppColors.primaryPink.withValues(alpha: 0.18) : AppColors.primaryPinkLight,
         'title': 'Milestone-Based Goals',
         'subtitle':
             'Set target dates and monthly contribution guides to buy laptops, gear, or plan trips stress-free.',
@@ -281,9 +284,9 @@ class AboutUsScreen extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.borderOf(context)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,18 +308,18 @@ class AboutUsScreen extends StatelessWidget {
                   children: [
                     Text(
                       p['title'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: AppColors.textPrimaryOf(context),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       p['subtitle'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
-                        color: AppColors.textSecondary,
+                        color: AppColors.textSecondaryOf(context),
                         height: 1.4,
                       ),
                     ),
@@ -335,33 +338,33 @@ class AboutUsScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.surfaceMutedOf(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text('Developer Team',
                   style: TextStyle(
-                      fontSize: 13.5, color: AppColors.textSecondary)),
+                      fontSize: 13.5, color: AppColors.textSecondaryOf(context))),
               Text('PennyPal Labs',
                   style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary)),
+                      color: AppColors.textPrimaryOf(context))),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text('License',
                   style: TextStyle(
-                      fontSize: 13.5, color: AppColors.textSecondary)),
-              Text('Student Free Tier',
+                      fontSize: 13.5, color: AppColors.textSecondaryOf(context))),
+              const Text('Student Free Tier',
                   style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -371,11 +374,11 @@ class AboutUsScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text('Official Website',
                   style: TextStyle(
-                      fontSize: 13.5, color: AppColors.textSecondary)),
-              Text('pennypal.app',
+                      fontSize: 13.5, color: AppColors.textSecondaryOf(context))),
+              const Text('pennypal.app',
                   style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -383,7 +386,7 @@ class AboutUsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: AppColors.borderOf(context)),
           const SizedBox(height: 10),
           InkWell(
             onTap: () {

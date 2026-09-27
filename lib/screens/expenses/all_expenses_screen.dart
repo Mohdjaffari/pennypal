@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/repository/pennypal_repository.dart';
+import '../../core/localization/language_service.dart';
+import 'dart:async';
 import '../../models/transaction_model.dart';
 import '../../models/report_chart_models.dart';
 import '../../components/home/transaction_tile.dart';
@@ -7,6 +10,8 @@ import '../../components/expenses/expenses_summary_banner.dart';
 import '../../components/expenses/expenses_chart_section.dart';
 import '../../components/expenses/expense_detail_sheet.dart';
 import '../../components/home/home_header.dart';
+import 'add_expense_screen.dart';
+import '../income/add_income_screen.dart';
 
 /// Screen displaying the comprehensive "All Expenses" view in PennyPal.
 /// Engineered for high performance, virtualized scrolling, live multi-filter search,
@@ -49,98 +54,34 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
     'Bills & Utilities',
   ];
 
+  StreamSubscription<List<TransactionModel>>? _txSub;
+
   @override
   void initState() {
     super.initState();
     _expenses = widget.initialExpenses != null
         ? List.from(widget.initialExpenses!)
-        : [
-            const TransactionModel(
-              id: 'tx_1',
-              title: 'Food & Dining',
-              date: '20 Sep 2025',
-              amount: 450,
-              icon: Icons.restaurant_rounded,
-              color: AppColors.primaryPink,
-              backgroundColor: AppColors.primaryPinkLight,
-              category: 'Food & Dining',
-              paymentMethod: 'Debit Card',
-              note: 'Dinner with friends',
-            ),
-            const TransactionModel(
-              id: 'tx_2',
-              title: 'Transport',
-              date: '19 Sep 2025',
-              amount: 120,
-              icon: Icons.directions_bus_rounded,
-              color: AppColors.primaryBlue,
-              backgroundColor: AppColors.primaryBlueLight,
-              category: 'Transport',
-              paymentMethod: 'Cash',
-            ),
-            const TransactionModel(
-              id: 'tx_3',
-              title: 'Shopping',
-              date: '18 Sep 2025',
-              amount: 2800,
-              icon: Icons.shopping_bag_rounded,
-              color: AppColors.shoppingOrange,
-              backgroundColor: AppColors.shoppingOrangeLight,
-              category: 'Shopping',
-              paymentMethod: 'Credit Card',
-              hasReceipt: true,
-              note: 'Winter jacket & shoes',
-            ),
-            const TransactionModel(
-              id: 'tx_4',
-              title: 'Entertainment',
-              date: '15 Sep 2025',
-              amount: 640,
-              icon: Icons.movie_rounded,
-              color: AppColors.purple,
-              backgroundColor: AppColors.purpleLight,
-              category: 'Entertainment',
-              paymentMethod: 'Debit Card',
-            ),
-            const TransactionModel(
-              id: 'tx_5',
-              title: 'Groceries Supermarket',
-              date: '14 Sep 2025',
-              amount: 1450,
-              icon: Icons.local_grocery_store_rounded,
-              color: Color(0xFF06D6A0),
-              backgroundColor: Color(0xFFE8FDF5),
-              category: 'Groceries',
-              paymentMethod: 'UPI / Digital Wallet',
-              hasReceipt: true,
-            ),
-            const TransactionModel(
-              id: 'tx_6',
-              title: 'Electricity & Wifi Bill',
-              date: '10 Sep 2025',
-              amount: 2200,
-              icon: Icons.receipt_long_rounded,
-              color: Color(0xFFE63946),
-              backgroundColor: Color(0xFFFFECEE),
-              category: 'Bills & Utilities',
-              paymentMethod: 'Net Banking',
-            ),
-            const TransactionModel(
-              id: 'tx_7',
-              title: 'Coffee & Snacks',
-              date: '08 Sep 2025',
-              amount: 280,
-              icon: Icons.restaurant_rounded,
-              color: AppColors.primaryPink,
-              backgroundColor: AppColors.primaryPinkLight,
-              category: 'Food & Dining',
-              paymentMethod: 'Cash',
-            ),
-          ];
+        : [];
+    _loadExpensesFromDb();
+    _txSub = PennyPalRepository.instance.transactionsStream.listen((list) {
+      if (mounted) {
+        setState(() {
+          _expenses = List.from(list);
+        });
+      }
+    });
+  }
+
+  Future<void> _loadExpensesFromDb() async {
+    final list = await PennyPalRepository.instance.getTransactions();
+    if (mounted) {
+      setState(() => _expenses = List.from(list));
+    }
   }
 
   @override
   void dispose() {
+    _txSub?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -249,19 +190,81 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
     ExpenseDetailSheet.show(
       context,
       transaction: tx,
-      onDelete: () {
+      onDelete: () async {
+        await PennyPalRepository.instance.deleteTransaction(tx.id);
         setState(() {
           _expenses.removeWhere((item) => item.id == tx.id);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${tx.title} deleted'),
-            backgroundColor: AppColors.expenseRed,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        widget.onExpensesChanged?.call(_expenses);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${tx.title} deleted'),
+              backgroundColor: AppColors.expenseRed,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+      onEdit: () {
+        _editTransaction(tx);
       },
     );
+  }
+
+  void _editTransaction(TransactionModel tx) {
+    final messenger = ScaffoldMessenger.of(context);
+    if (tx.isExpense) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => AddExpenseScreen(
+            initialExpense: tx,
+            onExpenseSaved: (updated) async {
+              await PennyPalRepository.instance.saveTransaction(updated);
+              setState(() {
+                final idx = _expenses.indexWhere((e) => e.id == updated.id);
+                if (idx != -1) {
+                  _expenses[idx] = updated;
+                }
+              });
+              widget.onExpensesChanged?.call(_expenses);
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('Expense "${updated.title}" updated successfully!'),
+                  backgroundColor: AppColors.successGreen,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => AddIncomeScreen(
+            initialIncome: tx,
+            onIncomeSaved: (updated) async {
+              await PennyPalRepository.instance.saveTransaction(updated);
+              setState(() {
+                final idx = _expenses.indexWhere((e) => e.id == updated.id);
+                if (idx != -1) {
+                  _expenses[idx] = updated;
+                }
+              });
+              widget.onExpensesChanged?.call(_expenses);
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('Income "${updated.title}" updated successfully!'),
+                  backgroundColor: AppColors.successGreen,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
   }
 
   void _resetFilters() {
@@ -283,7 +286,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: _buildAppBar(),
       body: SafeArea(
         child: _buildBody(expenses),
@@ -334,8 +337,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
             children: [
               Text(
                 'Expenses (${expenses.length})',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: AppColors.textPrimaryOf(context),
                   fontSize: 16.5,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -356,7 +359,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
                         size: 16,
                         color: _sortByHighest
                             ? AppColors.primaryPink
-                            : AppColors.textSecondary,
+                            : AppColors.textSecondaryOf(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -364,7 +367,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
                         style: TextStyle(
                           color: _sortByHighest
                               ? AppColors.primaryPink
-                              : AppColors.textSecondary,
+                              : AppColors.textSecondaryOf(context),
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -404,8 +407,8 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return HomeHeader(
-      title: 'All Expenses 🧾',
-      subtitle: 'Track and analyze spending',
+      title: '${context.tr('all_expenses')} 🧾',
+      subtitle: context.tr('track_analyze_spending'),
       isBackNavigation: true,
       onMenuPressed: () => Navigator.of(context).maybePop(),
       actions: [
@@ -421,28 +424,28 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: (val) => setState(() => _searchQuery = val),
-        style: const TextStyle(
-          color: AppColors.textPrimary,
+        style: TextStyle(
+          color: AppColors.textPrimaryOf(context),
           fontSize: 14.5,
           fontWeight: FontWeight.w600,
         ),
         decoration: InputDecoration(
           hintText: 'Search by title, category, payment...',
-          hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13.5),
-          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+          hintStyle: TextStyle(color: AppColors.textMutedOf(context), fontSize: 13.5),
+          prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMutedOf(context), size: 20),
           suffixIcon: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_searchQuery.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: AppColors.textMuted, size: 18),
+                  icon: Icon(Icons.clear_rounded, color: AppColors.textMutedOf(context), size: 18),
                   tooltip: 'Clear search',
                   onPressed: () {
                     _searchController.clear();
@@ -450,7 +453,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
                   },
                 ),
               IconButton(
-                icon: const Icon(Icons.tune_rounded, color: AppColors.textPrimary, size: 20),
+                icon: Icon(Icons.tune_rounded, color: AppColors.textPrimaryOf(context), size: 20),
                 tooltip: 'Reset filters',
                 onPressed: _resetFilters,
               ),
@@ -478,17 +481,17 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
               onSelected: (selected) {
                 if (selected) setState(() => _selectedPeriod = period);
               },
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.surfaceOf(context),
               selectedColor: AppColors.primaryBlue,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? Colors.white : AppColors.textSecondaryOf(context),
                 fontSize: 12.5,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
-                  color: isSelected ? AppColors.primaryBlue : AppColors.border,
+                  color: isSelected ? AppColors.primaryBlue : AppColors.borderOf(context),
                 ),
               ),
               showCheckmark: false,
@@ -515,17 +518,17 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
               onSelected: (selected) {
                 if (selected) setState(() => _selectedCategory = cat);
               },
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.surfaceOf(context),
               selectedColor: AppColors.primaryPink,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
+                color: isSelected ? Colors.white : AppColors.textSecondaryOf(context),
                 fontSize: 12.5,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
-                  color: isSelected ? AppColors.primaryPink : AppColors.border,
+                  color: isSelected ? AppColors.primaryPink : AppColors.borderOf(context),
                 ),
               ),
               showCheckmark: false,
@@ -558,10 +561,10 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No Expenses Found',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryOf(context),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),

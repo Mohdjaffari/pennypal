@@ -16,6 +16,8 @@ class CategoryBudgetProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -24,9 +26,9 @@ class CategoryBudgetProgressCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: AppColors.borderOf(context), width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.02),
@@ -44,7 +46,9 @@ class CategoryBudgetProgressCard extends StatelessWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: budget.backgroundColor,
+                      color: isDark
+                          ? budget.color.withValues(alpha: 0.2)
+                          : budget.backgroundColor,
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: Icon(
@@ -62,8 +66,8 @@ class CategoryBudgetProgressCard extends StatelessWidget {
                       children: [
                         Text(
                           budget.category,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: AppColors.textPrimaryOf(context),
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
                           ),
@@ -72,8 +76,8 @@ class CategoryBudgetProgressCard extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           budget.formattedRatio,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: AppColors.textSecondaryOf(context),
                             fontSize: 12.5,
                             fontWeight: FontWeight.w500,
                           ),
@@ -87,8 +91,8 @@ class CategoryBudgetProgressCard extends StatelessWidget {
                     '${budget.usagePercentage}%',
                     style: TextStyle(
                       color: budget.isOverBudget
-                          ? AppColors.expenseRed
-                          : AppColors.textSecondary,
+                          ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed)
+                          : AppColors.textSecondaryOf(context),
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -102,9 +106,9 @@ class CategoryBudgetProgressCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: budget.progressRatio,
-                  backgroundColor: AppColors.background,
+                  backgroundColor: AppColors.surfaceMutedOf(context),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    budget.isOverBudget ? AppColors.expenseRed : budget.color,
+                    budget.isOverBudget ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed) : budget.color,
                   ),
                   minHeight: 6,
                 ),

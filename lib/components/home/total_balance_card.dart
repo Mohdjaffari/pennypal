@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/language_service.dart';
 import 'painters/sparkline_painter.dart';
 
 /// Hero Card for displaying Total Balance.
@@ -29,18 +30,20 @@ class TotalBalanceCard extends StatelessWidget {
         : _buildPennyPalDesignCard(context);
   }
 
-  /// 1. PennyPal Figma Design: Crisp, elevated white card with wallet squircle and green trend badge
+  /// 1. PennyPal Figma Design: Crisp, elevated card with wallet squircle and trend badge
   Widget _buildPennyPalDesignCard(BuildContext context) {
+    final isDark = AppColors.isDark(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: AppColors.borderOf(context), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -58,7 +61,7 @@ class TotalBalanceCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: isDark ? 0.45 : 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -78,22 +81,25 @@ class TotalBalanceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Total Balance',
+                Text(
+                  context.tr('total_balance'),
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryOf(context),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  balance,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    balance,
+                    style: TextStyle(
+                      color: AppColors.textPrimaryOf(context),
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -102,9 +108,16 @@ class TotalBalanceCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: isTrendPositive
-                        ? AppColors.successGreenLight
-                        : AppColors.expenseRedLight,
+                        ? (isDark ? AppColors.darkSuccessGreenLight : AppColors.successGreenLight)
+                        : (isDark ? AppColors.darkExpenseRedLight : AppColors.expenseRedLight),
                     borderRadius: BorderRadius.circular(20),
+                    border: isDark
+                        ? Border.all(
+                            color: (isTrendPositive ? AppColors.successGreen : AppColors.expenseRed)
+                                .withValues(alpha: 0.3),
+                            width: 0.8,
+                          )
+                        : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -185,7 +198,7 @@ class TotalBalanceCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Total Balance',
+                      context.tr('total_balance'),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 14,
@@ -207,13 +220,16 @@ class TotalBalanceCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  balance,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    balance,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
                 const Spacer(),

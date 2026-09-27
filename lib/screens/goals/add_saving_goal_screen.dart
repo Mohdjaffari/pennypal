@@ -97,13 +97,22 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
       firstDate: now,
       lastDate: now.add(const Duration(days: 365 * 10)),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primaryPink,
-              onPrimary: Colors.white,
-              onSurface: AppColors.textPrimary,
-            ),
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: AppColors.primaryPink,
+                    onPrimary: Colors.white,
+                    surface: AppColors.darkSurface,
+                    onSurface: AppColors.darkTextPrimary,
+                  )
+                : const ColorScheme.light(
+                    primary: AppColors.primaryPink,
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: AppColors.textPrimary,
+                  ),
           ),
           child: child!,
         );
@@ -148,7 +157,7 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: _buildAppBar(context),
       body: SafeArea(
         child: Form(
@@ -168,8 +177,8 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
                 _buildFieldLabel('Goal Name'),
                 TextFormField(
                   controller: _goalNameController,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -191,8 +200,8 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
                 TextFormField(
                   controller: _targetAmountController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -219,8 +228,8 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
                 TextFormField(
                   controller: _currentSavingsController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -238,8 +247,8 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
                   controller: _targetDateController,
                   readOnly: true,
                   onTap: _pickTargetDate,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
@@ -266,8 +275,8 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
                 TextFormField(
                   controller: _monthlyContributionController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
@@ -284,15 +293,15 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
                 TextFormField(
                   readOnly: true,
                   initialValue: _creationDateString,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: AppColors.textSecondaryOf(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: _inputDecoration(
                     hint: '',
                     prefixIcon: Icons.lock_outline_rounded,
-                    fillColor: AppColors.surfaceMuted,
+                    fillColor: AppColors.surfaceMutedOf(context),
                   ),
                 ),
                 const SizedBox(height: 36),
@@ -312,17 +321,17 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       elevation: 0,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+        icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimaryOf(context)),
         onPressed: () => Navigator.of(context).pop(),
       ),
-      title: const Text(
+      title: Text(
         'Add New Goal',
         style: TextStyle(
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimaryOf(context),
           fontSize: 18,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.3,
@@ -369,16 +378,16 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
               ),
               selected: isSelected,
               selectedColor: AppColors.primaryPink,
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.surfaceOf(context),
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
+                color: isSelected ? Colors.white : AppColors.textPrimaryOf(context),
                 fontSize: 12.5,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
                 side: BorderSide(
-                  color: isSelected ? Colors.transparent : AppColors.border,
+                  color: isSelected ? Colors.transparent : AppColors.borderOf(context),
                 ),
               ),
               onSelected: (selected) {
@@ -403,11 +412,16 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
     String? prefixText,
     Color? fillColor,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+      hintStyle: TextStyle(
+        color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+        fontSize: 14,
+      ),
       filled: true,
-      fillColor: fillColor ?? AppColors.surface,
+      fillColor: fillColor ?? AppColors.surfaceOf(context),
       prefixText: prefixText,
       prefixStyle: const TextStyle(
         color: AppColors.primaryPink,
@@ -415,17 +429,17 @@ class _AddSavingGoalScreenState extends State<AddSavingGoalScreen> {
         fontWeight: FontWeight.w700,
       ),
       prefixIcon: prefixIcon != null
-          ? Icon(prefixIcon, color: AppColors.textSecondary, size: 20)
+          ? Icon(prefixIcon, color: AppColors.textSecondaryOf(context), size: 20)
           : null,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),

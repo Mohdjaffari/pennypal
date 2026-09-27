@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/language_service.dart';
 import '../../models/transaction_model.dart';
 import 'transaction_tile.dart';
 
@@ -25,22 +26,23 @@ class RecentTransactionsSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Recent Transactions',
+            Text(
+              context.tr('recent_transactions'),
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.textPrimaryOf(context),
                 fontSize: 16.5,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.2,
+                height: 1.3,
               ),
             ),
             GestureDetector(
               onTap: onViewAllPressed ?? () {},
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                 child: Text(
-                  'View All',
-                  style: TextStyle(
+                  context.tr('see_all'),
+                  style: const TextStyle(
                     color: AppColors.primaryBlue,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -58,15 +60,16 @@ class RecentTransactionsSection extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.surfaceOf(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: AppColors.borderOf(context)),
             ),
-            child: const Text(
-              'No recent transactions found',
+            child: Text(
+              context.tr('no_transactions_yet'),
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryOf(context),
                 fontSize: 13,
+                height: 1.3,
               ),
             ),
           )

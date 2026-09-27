@@ -83,17 +83,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceOf(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         title: Row(
-          children: const [
-            Icon(Icons.favorite_rounded, color: AppColors.primaryPink, size: 28),
-            SizedBox(width: 10),
+          children: [
+            const Icon(Icons.favorite_rounded, color: AppColors.primaryPink, size: 28),
+            const SizedBox(width: 10),
             Text('Thank You!',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary)),
+                    color: AppColors.textPrimaryOf(context))),
           ],
         ),
         content: Text(
@@ -125,7 +125,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
         title: 'App Feedback 💬',
         subtitle: 'Help us make PennyPal better',
@@ -144,12 +144,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               const SizedBox(height: 22),
 
               // 2. Feedback Category Chips
-              const Text(
+              Text(
                 'What are you reviewing?',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
               const SizedBox(height: 10),
@@ -157,12 +157,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               const SizedBox(height: 20),
 
               // 3. Quick Tag Recommendations
-              const Text(
+              Text(
                 'Quick Suggestion Tags (tap to add)',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryOf(context),
                 ),
               ),
               const SizedBox(height: 8),
@@ -170,12 +170,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               const SizedBox(height: 18),
 
               // 4. Feedback Input Text Area
-              const Text(
+              Text(
                 'Your Thoughts & Ideas',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryOf(context),
                 ),
               ),
               const SizedBox(height: 8),
@@ -203,9 +203,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Column(
         children: [
@@ -216,10 +216,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           const SizedBox(height: 8),
           Text(
             current['label']!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryOf(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -259,16 +259,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             if (selected) setState(() => _selectedCategory = c);
           },
           selectedColor: AppColors.primaryPink,
-          backgroundColor: AppColors.surface,
+          backgroundColor: AppColors.surfaceOf(context),
           labelStyle: TextStyle(
-            color: isSelected ? Colors.white : AppColors.textSecondary,
+            color: isSelected ? Colors.white : AppColors.textSecondaryOf(context),
             fontSize: 12.5,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: isSelected ? AppColors.primaryPink : AppColors.border,
+              color: isSelected ? AppColors.primaryPink : AppColors.borderOf(context),
             ),
           ),
           showCheckmark: false,
@@ -278,13 +278,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Widget _buildQuickTags() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: _quickTags.map((tag) {
         return ActionChip(
           label: Text('+ $tag'),
-          backgroundColor: AppColors.background,
+          backgroundColor: isDark
+              ? AppColors.primaryBlue.withValues(alpha: 0.15)
+              : AppColors.primaryBlueLight,
           labelStyle: const TextStyle(
             color: AppColors.primaryBlue,
             fontSize: 12,
@@ -292,7 +295,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
+            side: BorderSide(
+              color: AppColors.primaryBlue.withValues(alpha: isDark ? 0.35 : 0.25),
+            ),
           ),
           onPressed: () => _appendTag(tag),
         );
@@ -301,22 +306,28 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Widget _buildCommentBox() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextField(
       controller: _feedbackController,
       maxLines: 4,
+      style: TextStyle(color: AppColors.textPrimaryOf(context), fontSize: 14),
       decoration: InputDecoration(
         hintText: 'Tell us what you love or what we should add next...',
-        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+        hintStyle: TextStyle(
+          color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+          fontSize: 13,
+        ),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: AppColors.surfaceOf(context),
         contentPadding: const EdgeInsets.all(16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: AppColors.borderOf(context)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: AppColors.borderOf(context)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
@@ -330,9 +341,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderOf(context)),
       ),
       child: Row(
         children: [
@@ -350,20 +361,20 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'Join PennyPal Beta Club',
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryOf(context),
                   ),
                 ),
                 Text(
                   'Try new experimental features first',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryOf(context),
                   ),
                 ),
               ],

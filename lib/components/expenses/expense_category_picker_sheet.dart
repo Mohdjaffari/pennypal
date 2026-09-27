@@ -92,13 +92,20 @@ class ExpenseCategoryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final itemBg = AppColors.surfaceMutedOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
         top: false,
@@ -113,7 +120,7 @@ class ExpenseCategoryPickerSheet extends StatelessWidget {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: borderColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -125,25 +132,25 @@ class ExpenseCategoryPickerSheet extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Category',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: textPrimary,
                       letterSpacing: -0.3,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: AppColors.textSecondary, size: 22),
+                    icon: Icon(Icons.close_rounded,
+                        color: textSecondary, size: 22),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
             ),
 
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: borderColor),
 
             // Grid of categories
             Flexible(
@@ -170,13 +177,13 @@ class ExpenseCategoryPickerSheet extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primaryPink.withValues(alpha: 0.08)
-                              : AppColors.background,
+                              ? AppColors.primaryPink.withValues(alpha: isDark ? 0.2 : 0.08)
+                              : itemBg,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.primaryPink
-                                : AppColors.border,
+                                : borderColor,
                             width: isSelected ? 1.5 : 1,
                           ),
                         ),
@@ -186,7 +193,9 @@ class ExpenseCategoryPickerSheet extends StatelessWidget {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: cat.backgroundColor,
+                                color: isDark
+                                    ? cat.color.withValues(alpha: 0.2)
+                                    : cat.backgroundColor,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(cat.icon, color: cat.color, size: 18),
@@ -198,7 +207,7 @@ class ExpenseCategoryPickerSheet extends StatelessWidget {
                                 style: TextStyle(
                                   color: isSelected
                                       ? AppColors.primaryPink
-                                      : AppColors.textPrimary,
+                                      : textPrimary,
                                   fontSize: 13,
                                   fontWeight: isSelected
                                       ? FontWeight.w700

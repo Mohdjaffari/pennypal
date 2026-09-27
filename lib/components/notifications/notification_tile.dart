@@ -18,6 +18,12 @@ class NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final bgColor = AppColors.backgroundOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
@@ -34,8 +40,8 @@ class NotificationTile extends StatelessWidget {
       ),
       child: Material(
         color: notification.isUnread
-            ? AppColors.surface
-            : AppColors.background,
+            ? surfaceColor
+            : (isDark ? bgColor.withValues(alpha: 0.5) : bgColor),
         child: InkWell(
           onTap: onTap,
           child: Container(
@@ -62,7 +68,9 @@ class NotificationTile extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: notification.backgroundColor,
+                    color: isDark
+                        ? notification.color.withValues(alpha: 0.2)
+                        : notification.backgroundColor,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
@@ -86,7 +94,7 @@ class NotificationTile extends StatelessWidget {
                             child: Text(
                               notification.title,
                               style: TextStyle(
-                                color: AppColors.textPrimary,
+                                color: textPrimary,
                                 fontSize: 14.5,
                                 fontWeight: notification.isUnread
                                     ? FontWeight.w700
@@ -98,8 +106,8 @@ class NotificationTile extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             notification.timeAgo,
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
+                            style: TextStyle(
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
                               fontSize: 11.5,
                               fontWeight: FontWeight.w500,
                             ),
@@ -111,10 +119,10 @@ class NotificationTile extends StatelessWidget {
                       // Message Body
                       Text(
                         notification.message,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: textSecondary,
                           fontSize: 13,
-                          height: 1.4,
+                          height: 1.35,
                         ),
                       ),
                     ],

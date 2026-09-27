@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/transaction_model.dart';
+import 'receipt_image_viewer.dart';
 
 /// Modal Bottom Sheet displaying full receipt & breakdown information for a transaction.
 class ExpenseDetailSheet extends StatelessWidget {
   final TransactionModel transaction;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   const ExpenseDetailSheet({
     super.key,
     required this.transaction,
     this.onDelete,
+    this.onEdit,
   });
 
   static Future<void> show(
     BuildContext context, {
     required TransactionModel transaction,
     VoidCallback? onDelete,
+    VoidCallback? onEdit,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -25,17 +29,25 @@ class ExpenseDetailSheet extends StatelessWidget {
       builder: (context) => ExpenseDetailSheet(
         transaction: transaction,
         onDelete: onDelete,
+        onEdit: onEdit,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = AppColors.surfaceOf(context);
+    final cardBg = AppColors.surfaceMutedOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
         top: false,
@@ -49,7 +61,7 @@ class ExpenseDetailSheet extends StatelessWidget {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: borderColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -63,7 +75,7 @@ class ExpenseDetailSheet extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: transaction.backgroundColor,
+                    color: isDark ? transaction.color.withValues(alpha: 0.2) : transaction.backgroundColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
@@ -79,10 +91,10 @@ class ExpenseDetailSheet extends StatelessWidget {
                     children: [
                       Text(
                         transaction.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -90,9 +102,9 @@ class ExpenseDetailSheet extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         transaction.category,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: textSecondary,
                         ),
                       ),
                     ],
@@ -106,7 +118,7 @@ class ExpenseDetailSheet extends StatelessWidget {
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: transaction.isExpense
-                        ? AppColors.textPrimary
+                        ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed)
                         : AppColors.successGreen,
                   ),
                 ),
@@ -118,9 +130,9 @@ class ExpenseDetailSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: cardBg,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: borderColor),
               ),
               child: Column(
                 children: [
@@ -128,50 +140,136 @@ class ExpenseDetailSheet extends StatelessWidget {
                     label: 'Date',
                     value: transaction.date,
                     icon: Icons.calendar_today_outlined,
+                    textSecondary: textSecondary,
+                    textPrimary: textPrimary,
                   ),
-                  const Divider(height: 20, color: AppColors.border),
+                  Divider(height: 20, color: borderColor),
                   _detailRow(
                     label: 'Payment Method',
                     value: transaction.paymentMethod,
                     icon: Icons.credit_card_rounded,
+                    textSecondary: textSecondary,
+                    textPrimary: textPrimary,
                   ),
                   if (transaction.note.isNotEmpty) ...[
-                    const Divider(height: 20, color: AppColors.border),
+                    Divider(height: 20, color: borderColor),
                     _detailRow(
                       label: 'Note',
                       value: transaction.note,
                       icon: Icons.notes_rounded,
+                      textSecondary: textSecondary,
+                      textPrimary: textPrimary,
                     ),
                   ],
-                  const Divider(height: 20, color: AppColors.border),
+                  Divider(height: 20, color: borderColor),
                   _detailRow(
                     label: 'Receipt',
-                    value: transaction.hasReceipt ? 'Attached (1 scan)' : 'None',
+                    value: transaction.hasReceipt ? 'Attached' : 'None',
                     icon: Icons.receipt_long_rounded,
                     valueColor: transaction.hasReceipt
                         ? AppColors.primaryBlue
-                        : AppColors.textMuted,
+                        : (isDark ? AppColors.darkTextSecondary : AppColors.textMuted),
+                    textSecondary: textSecondary,
+                    textPrimary: textPrimary,
                   ),
+                  if (transaction.hasReceipt &&
+                      transaction.receiptPath != null &&
+                      transaction.receiptPath!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () => ReceiptImageViewer.showPreview(
+                        context,
+                        transaction.receiptPath!,
+                        title: '${transaction.title} Receipt',
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: surfaceColor,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Row(
+                          children: [
+                            ReceiptImageViewer(
+                              receiptPath: transaction.receiptPath!,
+                              width: 48,
+                              height: 48,
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Receipt Image Attached',
+                                    style: TextStyle(
+                                      color: textPrimary,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'Tap to view and zoom',
+                                    style: TextStyle(
+                                      color: AppColors.primaryBlue,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.zoom_in_rounded,
+                              color: AppColors.primaryBlue,
+                              size: 22,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // Action Buttons (Delete & Close)
+            // Action Buttons (Delete, Edit & Done)
             Row(
               children: [
-                if (onDelete != null) ...[
+                if (onDelete != null)
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onDelete?.call();
+                    },
+                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.expenseRed),
+                    tooltip: 'Delete',
+                    style: IconButton.styleFrom(
+                      padding: const EdgeInsets.all(14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: AppColors.expenseRed, width: 1.2),
+                      ),
+                    ),
+                  ),
+                if (onDelete != null) const SizedBox(width: 10),
+                if (onEdit != null)
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        onDelete?.call();
+                        onEdit?.call();
                       },
-                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                      label: const Text('Delete'),
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      label: const Text('Edit'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.expenseRed,
-                        side: const BorderSide(color: AppColors.expenseRed),
+                        foregroundColor: AppColors.primaryBlue,
+                        side: const BorderSide(color: AppColors.primaryBlue, width: 1.2),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -179,8 +277,7 @@ class ExpenseDetailSheet extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                ],
+                if (onEdit != null) const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
@@ -188,13 +285,14 @@ class ExpenseDetailSheet extends StatelessWidget {
                       backgroundColor: AppColors.primaryBlue,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: const Text(
                       'Done',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -212,15 +310,17 @@ class ExpenseDetailSheet extends StatelessWidget {
     required String value,
     required IconData icon,
     Color? valueColor,
+    required Color textSecondary,
+    required Color textPrimary,
   }) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.textSecondary),
+        Icon(icon, size: 18, color: textSecondary),
         const SizedBox(width: 10),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: textSecondary,
             fontSize: 13.5,
             fontWeight: FontWeight.w500,
           ),
@@ -229,7 +329,7 @@ class ExpenseDetailSheet extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            color: valueColor ?? AppColors.textPrimary,
+            color: valueColor ?? textPrimary,
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
           ),

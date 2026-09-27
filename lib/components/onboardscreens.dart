@@ -39,9 +39,12 @@ class _OnboardingScreensState extends State<OnboardingScreens> {
 
     if (!mounted) return;
 
+    // After onboarding, navigate directly to Homepage (in Guest mode if not logged in)
+    const Widget targetScreen = Homepage();
+
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const Homepage(),
+        pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: CurvedAnimation(

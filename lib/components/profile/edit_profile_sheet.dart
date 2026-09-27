@@ -67,6 +67,12 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
+    final surfaceColor = AppColors.surfaceOf(context);
+    final inputFill = AppColors.surfaceMutedOf(context);
+    final borderColor = AppColors.borderOf(context);
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Container(
       padding: EdgeInsets.only(
         left: 20,
@@ -74,9 +80,9 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
         top: 20,
         bottom: bottomInset + 24,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
@@ -91,7 +97,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: borderColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -101,16 +107,16 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Edit Profile',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                icon: Icon(Icons.close_rounded, color: textSecondary),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -118,25 +124,25 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           const SizedBox(height: 16),
 
           // Name Field
-          const Text(
+          Text(
             'Full Name',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+            style: TextStyle(color: textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 6),
           TextField(
             controller: _nameController,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
+            style: TextStyle(color: textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.background,
+              fillColor: inputFill,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: borderColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: borderColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -147,25 +153,25 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           const SizedBox(height: 16),
 
           // Role / Status Field
-          const Text(
+          Text(
             'Role / Occupation',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+            style: TextStyle(color: textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 6),
           TextField(
             controller: _roleController,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
+            style: TextStyle(color: textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.background,
+              fillColor: inputFill,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: borderColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: borderColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),

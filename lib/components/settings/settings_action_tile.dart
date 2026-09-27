@@ -38,8 +38,8 @@ class SettingsActionTile extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
+        style: TextStyle(
+          color: AppColors.textPrimaryOf(context),
           fontSize: 14.5,
           fontWeight: FontWeight.w600,
         ),
@@ -47,15 +47,15 @@ class SettingsActionTile extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(
               subtitle!,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: AppColors.textSecondaryOf(context),
                 fontSize: 12.5,
               ),
             )
           : null,
-      trailing: const Icon(
+      trailing: Icon(
         Icons.chevron_right_rounded,
-        color: AppColors.textMuted,
+        color: AppColors.textMutedOf(context),
         size: 22,
       ),
     );

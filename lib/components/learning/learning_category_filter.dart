@@ -34,10 +34,10 @@ class LearningCategoryFilter extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryBlue : AppColors.surface,
+                color: isSelected ? AppColors.primaryBlue : AppColors.surfaceOf(context),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? AppColors.primaryBlue : AppColors.border,
+                  color: isSelected ? AppColors.primaryBlue : AppColors.borderOf(context),
                   width: 1,
                 ),
                 boxShadow: isSelected
@@ -54,7 +54,7 @@ class LearningCategoryFilter extends StatelessWidget {
               child: Text(
                 category,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  color: isSelected ? Colors.white : AppColors.textSecondaryOf(context),
                   fontSize: 13.5,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),

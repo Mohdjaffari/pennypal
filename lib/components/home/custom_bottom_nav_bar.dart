@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/localization/language_service.dart';
 
 /// Navigation bar item definition.
 class NavigationTabItem {
@@ -23,20 +24,22 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.onTabSelected,
   });
 
-  static const List<NavigationTabItem> leftTabs = [
-    NavigationTabItem(icon: Icons.home_rounded, label: 'Home'),
-    NavigationTabItem(icon: Icons.receipt_long_rounded, label: 'Expenses'),
-  ];
-
-  static const List<NavigationTabItem> rightTabs = [
-    NavigationTabItem(icon: Icons.track_changes_rounded, label: 'Goals'),
-    NavigationTabItem(icon: Icons.person_outline_rounded, label: 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark(context);
+
+    final leftTabs = [
+      NavigationTabItem(icon: Icons.home_rounded, label: context.tr('home')),
+      NavigationTabItem(icon: Icons.receipt_long_rounded, label: context.tr('expenses')),
+    ];
+
+    final rightTabs = [
+      NavigationTabItem(icon: Icons.track_changes_rounded, label: context.tr('goals')),
+      NavigationTabItem(icon: Icons.person_outline_rounded, label: context.tr('profile')),
+    ];
+
     return BottomAppBar(
-      color: AppColors.surface,
+      color: AppColors.surfaceOf(context),
       surfaceTintColor: Colors.transparent,
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
@@ -53,6 +56,8 @@ class CustomBottomNavBar extends StatelessWidget {
               ...List.generate(
                 leftTabs.length,
                 (i) => _buildNavItem(
+                  context: context,
+                  isDark: isDark,
                   item: leftTabs[i],
                   isSelected: selectedIndex == i,
                   onTap: () => onTabSelected(i),
@@ -68,6 +73,8 @@ class CustomBottomNavBar extends StatelessWidget {
                 (i) {
                   final actualIndex = i + leftTabs.length;
                   return _buildNavItem(
+                    context: context,
+                    isDark: isDark,
                     item: rightTabs[i],
                     isSelected: selectedIndex == actualIndex,
                     onTap: () => onTabSelected(actualIndex),
@@ -82,11 +89,15 @@ class CustomBottomNavBar extends StatelessWidget {
   }
 
   Widget _buildNavItem({
+    required BuildContext context,
+    required bool isDark,
     required NavigationTabItem item,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final color = isSelected ? AppColors.primaryBlue : AppColors.textMuted;
+    final activeColor = isDark ? const Color(0xFF93C5FD) : AppColors.primaryBlue;
+    final inactiveColor = AppColors.textMutedOf(context);
+    final color = isSelected ? activeColor : inactiveColor;
 
     return Material(
       color: Colors.transparent,

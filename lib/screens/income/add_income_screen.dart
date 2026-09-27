@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/transaction_model.dart';
 import '../../components/income/income_source_picker_sheet.dart';
+import '../../core/localization/language_service.dart';
 
-/// Screen 3 from PennyPal design board: "Add Income"
+/// Screen 3 from PennyPal: "Add / Edit Income"
 /// Rebuilt with clean, human-readable architecture, real source selector,
-/// auto-filled interactive date picker, and form validation.
+/// auto-filled interactive date picker, dark mode contrast, and multilingual support.
 class AddIncomeScreen extends StatefulWidget {
   final ValueChanged<TransactionModel>? onIncomeSaved;
+  final TransactionModel? initialIncome;
 
   const AddIncomeScreen({
     super.key,
     this.onIncomeSaved,
+    this.initialIncome,
   });
 
   @override
@@ -25,6 +28,24 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
   IncomeSourceItem _selectedSource = IncomeSourcePickerSheet.sources.first;
   DateTime _selectedDate = DateTime.now();
+
+  bool get isEditing => widget.initialIncome != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialIncome != null) {
+      final inc = widget.initialIncome!;
+      _amountController.text = inc.amount.toInt().toString();
+      _descriptionController.text = inc.note.isNotEmpty ? inc.note : inc.title;
+
+      final matched = IncomeSourcePickerSheet.sources.firstWhere(
+        (s) => s.name.toLowerCase() == inc.category.toLowerCase(),
+        orElse: () => IncomeSourcePickerSheet.sources.first,
+      );
+      _selectedSource = matched;
+    }
+  }
 
   @override
   void dispose() {
@@ -62,6 +83,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   }
 
   Future<void> _chooseDate() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -70,11 +93,19 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primaryPink,
-              onPrimary: Colors.white,
-              onSurface: AppColors.textPrimary,
-            ),
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: AppColors.primaryPink,
+                    onPrimary: Colors.white,
+                    surface: AppColors.darkSurface,
+                    onSurface: AppColors.darkTextPrimary,
+                  )
+                : const ColorScheme.light(
+                    primary: AppColors.primaryPink,
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: AppColors.textPrimary,
+                  ),
           ),
           child: child!,
         );
@@ -92,8 +123,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
     final description = _descriptionController.text.trim();
 
-    final newIncome = TransactionModel(
-      id: 'inc_${DateTime.now().millisecondsSinceEpoch}',
+    final income = TransactionModel(
+      id: widget.initialIncome?.id ?? 'inc_${DateTime.now().millisecondsSinceEpoch}',
       title: description.isNotEmpty ? description : _selectedSource.name,
       date: _formatDate(_selectedDate),
       amount: amount,
@@ -102,28 +133,32 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       backgroundColor: _selectedSource.backgroundColor,
       category: _selectedSource.name,
       isExpense: false,
+      note: description,
     );
 
-    widget.onIncomeSaved?.call(newIncome);
-    Navigator.of(context).pop(newIncome);
+    widget.onIncomeSaved?.call(income);
+    Navigator.of(context).pop(income);
   }
 
   @override
   Widget build(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryOf(context);
+    final textSecondary = AppColors.textSecondaryOf(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.backgroundOf(context),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Add Income',
+        title: Text(
+          isEditing ? context.tr('edit_income') : context.tr('add_income'),
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.3,
@@ -140,12 +175,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Amount Input Field
-                _buildFieldLabel('Amount'),
+                _buildFieldLabel(context.tr('amount')),
                 TextFormField(
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -168,7 +203,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 const SizedBox(height: 20),
 
                 // 2. Source Selector Dropdown Field
-                _buildFieldLabel('Source'),
+                _buildFieldLabel(context.tr('income_source')),
                 InkWell(
                   onTap: _chooseSource,
                   borderRadius: BorderRadius.circular(16),
@@ -177,17 +212,17 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       readOnly: true,
                       key: ValueKey(_selectedSource.name),
                       initialValue: _selectedSource.name,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: textPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: _inputDecoration(
                         hint: 'Select Source',
                         prefixIcon: _selectedSource.icon,
-                        suffixIcon: const Icon(
+                        suffixIcon: Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: AppColors.textSecondary,
+                          color: textSecondary,
                         ),
                       ),
                     ),
@@ -196,7 +231,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 const SizedBox(height: 20),
 
                 // 3. Date Field (Auto-filled with tap to change)
-                _buildFieldLabel('Date (Auto-filled)'),
+                _buildFieldLabel(context.tr('date')),
                 InkWell(
                   onTap: _chooseDate,
                   borderRadius: BorderRadius.circular(16),
@@ -205,17 +240,17 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       readOnly: true,
                       key: ValueKey(_selectedDate),
                       initialValue: _formatDate(_selectedDate),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: textPrimary,
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: _inputDecoration(
                         hint: 'Date',
                         prefixIcon: Icons.calendar_today_outlined,
-                        suffixIcon: const Icon(
+                        suffixIcon: Icon(
                           Icons.edit_calendar_rounded,
-                          color: AppColors.textSecondary,
+                          color: textSecondary,
                           size: 20,
                         ),
                       ),
@@ -225,33 +260,35 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 const SizedBox(height: 20),
 
                 // 4. Description Multi-line Field
-                _buildFieldLabel('Description'),
+                _buildFieldLabel(context.tr('note_optional')),
                 TextFormField(
                   controller: _descriptionController,
                   maxLines: 4,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: textPrimary,
                     fontSize: 14.5,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Add details about this income...',
-                    hintStyle: const TextStyle(
-                      color: AppColors.textMuted,
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textMuted,
                       fontSize: 14,
                     ),
                     filled: true,
-                    fillColor: AppColors.surface,
+                    fillColor: AppColors.surfaceOf(context),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 16,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: AppColors.borderOf(context)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: AppColors.borderOf(context)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -264,7 +301,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 ),
                 const SizedBox(height: 36),
 
-                // 5. Save Income Primary CTA
+                // 5. Submit CTA Button
                 _buildSaveButton(),
                 const SizedBox(height: 20),
               ],
@@ -280,10 +317,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          color: AppColors.textSecondaryOf(context),
         ),
       ),
     );
@@ -295,11 +332,16 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     Widget? suffixIcon,
     String? prefixText,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+      hintStyle: TextStyle(
+        color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+        fontSize: 14,
+      ),
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: AppColors.surfaceOf(context),
       prefixText: prefixText,
       prefixStyle: const TextStyle(
         color: AppColors.primaryPink,
@@ -307,17 +349,17 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         fontWeight: FontWeight.w700,
       ),
       prefixIcon: prefixIcon != null
-          ? Icon(prefixIcon, color: AppColors.textSecondary, size: 20)
+          ? Icon(prefixIcon, color: AppColors.textSecondaryOf(context), size: 20)
           : null,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.borderOf(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -350,9 +392,9 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        child: const Text(
-          'Save Income',
-          style: TextStyle(
+        child: Text(
+          isEditing ? context.tr('update_income') : context.tr('save_income'),
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.w700,

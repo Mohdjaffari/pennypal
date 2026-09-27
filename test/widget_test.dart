@@ -1,30 +1,67 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:pages_app/main.dart';
+import 'package:pages_app/components/Auth/LoginScreen.dart';
+import 'package:pages_app/components/Auth/SignupScreen.dart';
+import 'package:pages_app/components/Auth/ForgotPasswordScreen.dart';
+import 'package:pages_app/screens/splash/splash_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('LoginScreen smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: LoginScreen(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Welcome Back!'), findsOneWidget);
+    expect(find.text('Login to your account'), findsOneWidget);
+    expect(find.text('Login'), findsOneWidget);
+    expect(find.text('Email or Phone'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Remember me'), findsOneWidget);
+    expect(find.text('Forgot Password?'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('SignupScreen smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SignupScreen(),
+      ),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Create Your Account'), findsOneWidget);
+    expect(find.text('Start your financial journey'), findsOneWidget);
+    expect(find.text('Register'), findsOneWidget);
+    expect(find.text('Full Name'), findsOneWidget);
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Phone Number'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+  });
+
+  testWidgets('ForgotPasswordScreen smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: ForgotPasswordScreen(),
+      ),
+    );
+
+    expect(find.text('Forgot Password?'), findsOneWidget);
+    expect(find.text('Send Recovery Code'), findsOneWidget);
+    expect(find.text('Email or Phone'), findsOneWidget);
+  });
+
+  testWidgets('SplashScreen smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SplashScreen(autoNavigate: false),
+      ),
+    );
+
+    // Initial pump to let staggered animation advance
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.text('Fresh All Along'), findsOneWidget);
+    expect(find.text('Smart Money'), findsOneWidget);
+    expect(find.text('Better Future'), findsOneWidget);
   });
 }

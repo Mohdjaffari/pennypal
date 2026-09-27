@@ -31,7 +31,9 @@ class MiniSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveIconBg = iconBgColor ?? iconColor.withValues(alpha: 0.12);
+    final isDark = AppColors.isDark(context);
+    final effectiveIconBg = iconBgColor ??
+        (isDark ? iconColor.withValues(alpha: 0.22) : iconColor.withValues(alpha: 0.12));
     final effectiveTrendColor = trendColor ?? AppColors.successGreen;
 
     return Material(
@@ -42,12 +44,12 @@ class MiniSummaryCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceOf(context),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: AppColors.borderOf(context), width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.025),
+                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.025),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -88,8 +90,8 @@ class MiniSummaryCard extends StatelessWidget {
               // Title
               Text(
                 title,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: AppColors.textSecondaryOf(context),
                   fontSize: 12.5,
                   fontWeight: FontWeight.w500,
                 ),
@@ -97,24 +99,30 @@ class MiniSummaryCard extends StatelessWidget {
               const SizedBox(height: 4),
 
               // Amount
-              Text(
-                amount,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text(
+                  amount,
+                  style: TextStyle(
+                    color: AppColors.textPrimaryOf(context),
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
 
               // Trend Subtitle
-              Text(
-                trendText,
-                style: TextStyle(
-                  color: effectiveTrendColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text(
+                  trendText,
+                  style: TextStyle(
+                    color: effectiveTrendColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
