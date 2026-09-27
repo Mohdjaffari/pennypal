@@ -123,6 +123,7 @@ class _LearningScreenState extends State<LearningScreen> {
                   ? _EmptyState(category: _selectedCategory)
                   : _ArticleList(
                       articles: displayArticles,
+                      showFeatured: _selectedCategory == 'All',
                       onArticleTap: _openArticle,
                     ),
             ),
@@ -154,7 +155,7 @@ class _LearningScreenState extends State<LearningScreen> {
         // Completed count badge
         if (_completedCount > 0)
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -222,7 +223,7 @@ class _ProgressBanner extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isAllDone ? '🎉 All articles completed!' : 'Your Progress',
+                  isAllDone ? 'All articles completed' : 'Your Progress',
                   style: TextStyle(
                     color: isAllDone ? AppColors.successGreen : AppColors.primaryBlue,
                     fontSize: 13,
@@ -260,18 +261,222 @@ class _ProgressBanner extends StatelessWidget {
   }
 }
 
-/// Article list with bounce physics.
+/// Featured hero card showing key educational guide.
+class _FeaturedArticleCard extends StatelessWidget {
+  final LearningArticleModel article;
+  final VoidCallback onTap;
+
+  const _FeaturedArticleCard({
+    required this.article,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 185,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background Image
+            if (article.imagePath != null)
+              Image.asset(
+                article.imagePath!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: article.imageColor,
+                ),
+              )
+            else
+              Container(color: article.imageColor),
+
+            // Gradient Overlay for contrast
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.40, 1.0],
+                  colors: [
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.black.withValues(alpha: 0.45),
+                    Colors.black.withValues(alpha: 0.88),
+                  ],
+                ),
+              ),
+            ),
+
+            // Card Content & Ripple Tap
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                splashColor: Colors.white.withValues(alpha: 0.15),
+                highlightColor: Colors.white.withValues(alpha: 0.08),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Top Row: Featured Pill & Duration
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.22),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star_rounded, color: Colors.amber, size: 13),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'FEATURED • ${article.category.toUpperCase()}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.7,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              article.duration,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Bottom: Title & Action
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            article.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                              height: 1.25,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: const [
+                              Text(
+                                'Read Guide',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Article list with bounce physics and optional hero featured card.
 class _ArticleList extends StatelessWidget {
   final List<LearningArticleModel> articles;
+  final bool showFeatured;
   final Future<void> Function(LearningArticleModel) onArticleTap;
 
   const _ArticleList({
     required this.articles,
+    required this.showFeatured,
     required this.onArticleTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (showFeatured && articles.isNotEmpty && articles.first.imagePath != null) {
+      final featured = articles.first;
+      final rest = articles.sublist(1);
+
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        physics: const BouncingScrollPhysics(),
+        children: [
+          _FeaturedArticleCard(
+            article: featured,
+            onTap: () => onArticleTap(featured),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'All Guides',
+            style: TextStyle(
+              color: AppColors.textPrimaryOf(context),
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...rest.map((article) => Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: LearningArticleCard(
+                  article: article,
+                  onTap: () => onArticleTap(article),
+                ),
+              )),
+        ],
+      );
+    }
+
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       physics: const BouncingScrollPhysics(),

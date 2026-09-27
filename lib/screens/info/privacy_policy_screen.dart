@@ -92,7 +92,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'Privacy Policy 🛡️',
+        title: 'Privacy Policy',
         subtitle: 'Your data, your control',
         isBackNavigation: true,
         onMenuPressed: onBack ?? () => Navigator.of(context).maybePop(),

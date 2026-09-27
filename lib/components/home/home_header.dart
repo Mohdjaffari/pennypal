@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/localization/language_service.dart';
 import '../../core/notifications/notification_service.dart';
@@ -13,6 +14,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? subtitle;
   final bool hasUnreadNotification;
   final bool isBackNavigation;
+  final bool showNotificationButton;
   final VoidCallback? onMenuPressed;
   final VoidCallback? onNotificationPressed;
   final List<Widget>? actions;
@@ -24,6 +26,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
     this.subtitle,
     this.hasUnreadNotification = true,
     this.isBackNavigation = false,
+    this.showNotificationButton = true,
     this.onMenuPressed,
     this.onNotificationPressed,
     this.actions,
@@ -46,32 +49,32 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
     return Builder(
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
+        final bg = backgroundColor ?? AppColors.surfaceOf(context);
+        final bd = borderColor ?? AppColors.borderOf(context);
+        final ic = iconColor ?? AppColors.textPrimaryOf(context);
+
         return Material(
-          color: Colors.transparent,
+          color: bg,
+          shape: CircleBorder(
+            side: BorderSide(color: bd, width: 1),
+          ),
+          elevation: isDark ? 0 : 1.5,
+          shadowColor: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+          clipBehavior: Clip.antiAlias,
           child: Tooltip(
             message: tooltip ?? '',
             child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(50),
-              child: Container(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onTap();
+              },
+              child: SizedBox(
                 width: 44,
                 height: 44,
-                decoration: BoxDecoration(
-                  color: backgroundColor ?? AppColors.surfaceOf(context),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: borderColor ?? AppColors.borderOf(context), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Icon(icon, color: iconColor ?? AppColors.textPrimaryOf(context), size: iconSize),
+                    Icon(icon, color: ic, size: iconSize),
                     ?badge,
                   ],
                 ),
@@ -86,13 +89,52 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final isRTL = Directionality.of(context) == TextDirection.rtl;
-    final displayTitle = title ?? '${context.tr('hello')}, $userName 👋';
+    final displayTitle = title ?? '${context.tr('hello')}, $userName';
     final displaySubtitle = subtitle ?? context.tr('header_subtitle');
     final bg = AppColors.backgroundOf(context);
     final surface = AppColors.surfaceOf(context);
     final border = AppColors.borderOf(context);
     final textPrimary = AppColors.textPrimaryOf(context);
     final textSecondary = AppColors.textSecondaryOf(context);
+
+    Widget buildNotificationBell() {
+      return circularButton(
+        icon: Icons.notifications_none_rounded,
+        onTap: () {
+          if (onNotificationPressed != null) {
+            onNotificationPressed!();
+          } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const NotificationsScreen(),
+              ),
+            );
+          }
+        },
+        tooltip: 'Notifications',
+        iconColor: textPrimary,
+        backgroundColor: surface,
+        borderColor: border,
+        badge: (hasUnreadNotification && NotificationService.instance.unreadCount > 0)
+            ? Positioned(
+                top: 10,
+                right: 11,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryPink,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: surface,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              )
+            : null,
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -117,30 +159,26 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     // Squircle Button
                     Material(
-                      color: Colors.transparent,
+                      color: surface,
+                      borderRadius: BorderRadius.circular(12),
+                      elevation: 0,
+                      clipBehavior: Clip.antiAlias,
                       child: InkWell(
-                        onTap: onMenuPressed ??
-                            () {
-                              if (isBackNavigation) {
-                                Navigator.of(context).maybePop();
-                              } else {
-                                Scaffold.of(context).openDrawer();
-                              }
-                            },
-                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          if (onMenuPressed != null) {
+                            onMenuPressed!();
+                          } else if (isBackNavigation) {
+                            Navigator.of(context).maybePop();
+                          } else {
+                            Scaffold.of(context).openDrawer();
+                          }
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(9),
                           decoration: BoxDecoration(
-                            color: surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: border, width: 1),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
                           ),
                           child: Icon(
                             isBackNavigation
@@ -193,46 +231,23 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
 
               const SizedBox(width: 10),
 
-              // Right: Custom Action Buttons or Notification Bell with Pink Badge
-              if (actions != null && actions!.isNotEmpty)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: actions!,
-                )
-              else
-                circularButton(
-                  icon: Icons.notifications_none_rounded,
-                  onTap: onNotificationPressed ??
-                      () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const NotificationsScreen(),
-                          ),
-                        );
-                      },
-                  tooltip: 'Notifications',
-                  iconColor: textPrimary,
-                  backgroundColor: surface,
-                  borderColor: border,
-                  badge: (hasUnreadNotification && NotificationService.instance.unreadCount > 0)
-                      ? Positioned(
-                          top: 10,
-                          right: 11,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryPink,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: surface,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
+              // Right: Custom Action Buttons and/or Notification Bell with Pink Badge
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (actions != null && actions!.isNotEmpty) ...[
+                    for (int i = 0; i < actions!.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 8),
+                      actions![i],
+                    ],
+                    if (showNotificationButton) ...[
+                      const SizedBox(width: 8),
+                      buildNotificationBell(),
+                    ],
+                  ] else if (showNotificationButton)
+                    buildNotificationBell(),
+                ],
+              ),
             ],
           ),
         ),
@@ -240,3 +255,4 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
+

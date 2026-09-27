@@ -101,13 +101,17 @@ class MiniSummaryCard extends StatelessWidget {
               // Amount
               Directionality(
                 textDirection: TextDirection.ltr,
-                child: Text(
-                  amount,
-                  style: TextStyle(
-                    color: AppColors.textPrimaryOf(context),
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    amount,
+                    style: TextStyle(
+                      color: AppColors.textPrimaryOf(context),
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.3,
+                    ),
                   ),
                 ),
               ),

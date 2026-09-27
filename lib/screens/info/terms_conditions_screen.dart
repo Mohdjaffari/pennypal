@@ -22,7 +22,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'Terms of Service 📜',
+        title: 'Terms of Service',
         subtitle: 'Updated: September 2026',
         isBackNavigation: true,
         onMenuPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),

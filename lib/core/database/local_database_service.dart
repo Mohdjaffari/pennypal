@@ -63,6 +63,16 @@ class LocalDatabaseService {
               await db.execute(DatabaseTables.createUsersTable);
             } catch (_) {}
           }
+          if (oldVersion < 4) {
+            try {
+              await db.execute(
+                'ALTER TABLE ${DatabaseTables.tableBudgets} ADD COLUMN ${DatabaseTables.colAlertThreshold} REAL DEFAULT 0.8',
+              );
+              await db.execute(
+                'ALTER TABLE ${DatabaseTables.tableBudgets} ADD COLUMN ${DatabaseTables.colEnableAlert} INTEGER DEFAULT 1',
+              );
+            } catch (_) {}
+          }
         },
       );
       _isInitialized = true;

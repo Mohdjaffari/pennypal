@@ -433,24 +433,24 @@ class _PennyPalDrawerState extends State<PennyPalDrawer> {
                       await NotificationService.instance.setPushAlertsEnabled(val);
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      if (val) {
-                        NotificationService.instance.triggerTestAlert(context);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(Icons.notifications_off_rounded, color: Colors.white, size: 18),
-                                const SizedBox(width: 10),
-                                Text('🔕 ${context.tr('push_alerts_muted')}'),
-                              ],
-                            ),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              Icon(
+                                val ? Icons.notifications_active_rounded : Icons.notifications_off_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(val ? context.tr('push_alerts_active') : context.tr('push_alerts_muted')),
+                            ],
                           ),
-                        );
-                      }
+                          duration: const Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      );
                     },
                   ),
 

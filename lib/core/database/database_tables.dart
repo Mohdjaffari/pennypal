@@ -3,7 +3,7 @@ class DatabaseTables {
   DatabaseTables._();
 
   static const String databaseName = 'pennypal.db';
-  static const int databaseVersion = 3;
+  static const int databaseVersion = 4;
 
   // Table Names
   static const String tableTransactions = 'transactions';
@@ -45,6 +45,8 @@ class DatabaseTables {
   // Budgets Columns
   static const String colSpentAmount = 'spent_amount';
   static const String colLimitAmount = 'limit_amount';
+  static const String colAlertThreshold = 'alert_threshold';
+  static const String colEnableAlert = 'enable_alert';
 
   // Goals Columns
   static const String colTargetAmount = 'target_amount';
@@ -92,6 +94,8 @@ class DatabaseTables {
       $colIconFontFamily TEXT,
       $colColorValue INTEGER NOT NULL,
       $colBackgroundColorValue INTEGER NOT NULL,
+      $colAlertThreshold REAL NOT NULL DEFAULT 0.8,
+      $colEnableAlert INTEGER NOT NULL DEFAULT 1,
       $colUpdatedAt INTEGER NOT NULL,
       $colIsSynced INTEGER NOT NULL DEFAULT 0
     );

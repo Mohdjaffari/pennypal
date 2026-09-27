@@ -280,7 +280,7 @@ class NotificationService extends ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            '⚠️ Push alerts are currently muted. Enable them to receive notifications.',
+            'Push alerts are currently muted. Enable them to receive notifications.',
           ),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),

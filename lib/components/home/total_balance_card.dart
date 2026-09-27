@@ -19,156 +19,36 @@ class TotalBalanceCard extends StatelessWidget {
     this.balance = 'Rs. 12,450',
     this.trendPercentage = '+12% this month',
     this.isTrendPositive = true,
-    this.useSparklineStyle = false,
+    this.useSparklineStyle = true,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return useSparklineStyle
-        ? _buildSparklineCard(context)
-        : _buildPennyPalDesignCard(context);
+    return _buildSparklineCard(context);
   }
 
-  /// 1. PennyPal Figma Design: Crisp, elevated card with wallet squircle and trend badge
-  Widget _buildPennyPalDesignCard(BuildContext context) {
-    final isDark = AppColors.isDark(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.borderOf(context), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Blue Wallet Squircle
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              gradient: AppColors.blueGradient,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withValues(alpha: isDark ? 0.45 : 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.account_balance_wallet_rounded,
-              color: Colors.white,
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Total Balance Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  context.tr('total_balance'),
-                  style: TextStyle(
-                    color: AppColors.textSecondaryOf(context),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: Text(
-                    balance,
-                    style: TextStyle(
-                      color: AppColors.textPrimaryOf(context),
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                // Green trend pill
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isTrendPositive
-                        ? (isDark ? AppColors.darkSuccessGreenLight : AppColors.successGreenLight)
-                        : (isDark ? AppColors.darkExpenseRedLight : AppColors.expenseRedLight),
-                    borderRadius: BorderRadius.circular(20),
-                    border: isDark
-                        ? Border.all(
-                            color: (isTrendPositive ? AppColors.successGreen : AppColors.expenseRed)
-                                .withValues(alpha: 0.3),
-                            width: 0.8,
-                          )
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isTrendPositive
-                            ? Icons.arrow_upward_rounded
-                            : Icons.arrow_downward_rounded,
-                        color: isTrendPositive
-                            ? AppColors.successGreen
-                            : AppColors.expenseRed,
-                        size: 13,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        trendPercentage,
-                        style: TextStyle(
-                          color: isTrendPositive
-                              ? AppColors.successGreen
-                              : AppColors.expenseRed,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 2. Blue Sparkline Variant with smooth wave painter
+  /// Blue Sparkline Card with smooth wave painter, balance and start tracking button
   Widget _buildSparklineCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 170,
-      decoration: BoxDecoration(
-        gradient: AppColors.blueGradient,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryBlue.withValues(alpha: 0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+        child: Container(
+          width: double.infinity,
+          height: 170,
+          decoration: BoxDecoration(
+            gradient: AppColors.blueGradient,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryBlue.withValues(alpha: 0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
       child: Stack(
         children: [
           // Background Sparkline Graphic
@@ -266,6 +146,8 @@ class TotalBalanceCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

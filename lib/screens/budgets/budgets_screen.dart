@@ -690,10 +690,10 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
             : AppColors.successGreen;
 
     final badgeText = isOver
-        ? 'Over Budget 🚨'
+        ? 'Over Budget'
         : isWarning
-            ? 'Watch Out ⚠️'
-            : 'On Track 🟢';
+            ? 'Near Limit'
+            : 'On Track';
 
     return Container(
       width: double.infinity,

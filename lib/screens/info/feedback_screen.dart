@@ -127,7 +127,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'App Feedback 💬',
+        title: 'App Feedback',
         subtitle: 'Help us make PennyPal better',
         isBackNavigation: true,
         onMenuPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),

@@ -434,7 +434,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
           const SizedBox(height: 28),
 
-          // 4. Send Instructions Button (PennyPal Electric Blue Gradient)
+          // 4. Send Instructions Button (Vibrant Rose/Pink matching Login and Signup)
           SizedBox(
             height: 52,
             child: DecoratedBox(
@@ -442,16 +442,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                 borderRadius: BorderRadius.circular(16),
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFF2563EB),
-                    Color(0xFF1D4ED8),
+                    Color(0xFFF43F5E), // Vibrant Rose/Pink
+                    Color(0xFFE11D48), // Deep Pink
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withValues(alpha: isDark ? 0.35 : 0.28),
-                    blurRadius: 12,
+                    color: const Color(0xFFF43F5E).withValues(alpha: isDark ? 0.35 : 0.28),
+                    blurRadius: 14,
                     offset: const Offset(0, 5),
                   ),
                 ],
@@ -825,16 +825,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                 borderRadius: BorderRadius.circular(16),
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFF2563EB),
-                    Color(0xFF1D4ED8),
+                    Color(0xFFF43F5E), // Vibrant Rose/Pink
+                    Color(0xFFE11D48), // Deep Pink
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withValues(alpha: isDark ? 0.35 : 0.28),
-                    blurRadius: 12,
+                    color: const Color(0xFFF43F5E).withValues(alpha: isDark ? 0.35 : 0.28),
+                    blurRadius: 14,
                     offset: const Offset(0, 5),
                   ),
                 ],

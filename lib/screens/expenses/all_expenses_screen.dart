@@ -407,7 +407,7 @@ class _AllExpensesScreenState extends State<AllExpensesScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return HomeHeader(
-      title: '${context.tr('all_expenses')} 🧾',
+      title: context.tr('all_expenses'),
       subtitle: context.tr('track_analyze_spending'),
       isBackNavigation: true,
       onMenuPressed: () => Navigator.of(context).maybePop(),

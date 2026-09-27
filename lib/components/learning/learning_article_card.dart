@@ -48,42 +48,49 @@ class LearningArticleCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 1. Article Thumbnail Squircle
+                // 1. Article Thumbnail (Image or Icon fallback)
                 Stack(
                   children: [
-                    Container(
-                      width: 68,
-                      height: 68,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? article.imageColor.withValues(alpha: 0.2)
-                            : article.backgroundColor,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        article.imageIcon,
-                        color: isCompleted
-                            ? article.imageColor.withValues(alpha: 0.5)
-                            : article.imageColor,
-                        size: 32,
-                      ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: article.imagePath != null
+                          ? Image.asset(
+                              article.imagePath!,
+                              width: 68,
+                              height: 68,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _buildFallbackIcon(isDark, isCompleted),
+                            )
+                          : _buildFallbackIcon(isDark, isCompleted),
                     ),
                     // Completed overlay badge
                     if (isCompleted)
                       Positioned(
-                        right: 0,
-                        bottom: 0,
+                        right: 2,
+                        bottom: 2,
                         child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
                             color: AppColors.successGreen,
                             shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.surfaceOf(context),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
                           child: const Icon(
                             Icons.check_rounded,
                             color: Colors.white,
-                            size: 12,
+                            size: 13,
                           ),
                         ),
                       ),
@@ -213,6 +220,26 @@ class LearningArticleCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackIcon(bool isDark, bool isCompleted) {
+    return Container(
+      width: 68,
+      height: 68,
+      decoration: BoxDecoration(
+        color: isDark
+            ? article.imageColor.withValues(alpha: 0.2)
+            : article.backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Icon(
+        article.imageIcon,
+        color: isCompleted
+            ? article.imageColor.withValues(alpha: 0.5)
+            : article.imageColor,
+        size: 32,
       ),
     );
   }

@@ -88,7 +88,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'Help & Support 🛟',
+        title: 'Help & Support',
         subtitle: 'FAQs, guides & instant answers',
         isBackNavigation: true,
         onMenuPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
@@ -349,7 +349,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  isMarked ? 'Thank you! 👍' : 'Was this helpful?',
+                  isMarked ? 'Thank you for your feedback' : 'Was this helpful?',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isMarked ? FontWeight.w700 : FontWeight.w500,

@@ -31,6 +31,9 @@ class LearningArticleModel {
   /// Practical numbered action steps the reader can apply immediately.
   final List<String> actionSteps;
 
+  /// Optional image asset path for rich visual cards and hero detail banners.
+  final String? imagePath;
+
   /// Estimated reading progress label shown in card (e.g. 'Not started', 'In progress').
   final bool isCompleted;
 
@@ -43,6 +46,7 @@ class LearningArticleModel {
     required this.imageColor,
     required this.backgroundColor,
     required this.imageIcon,
+    this.imagePath,
     this.summary = '',
     this.keyTakeaways = const [],
     this.sections = const [],
@@ -51,7 +55,7 @@ class LearningArticleModel {
   });
 
   /// Returns a copy of this model with [isCompleted] toggled.
-  LearningArticleModel copyWith({bool? isCompleted}) {
+  LearningArticleModel copyWith({bool? isCompleted, String? imagePath}) {
     return LearningArticleModel(
       id: id,
       title: title,
@@ -61,6 +65,7 @@ class LearningArticleModel {
       imageColor: imageColor,
       backgroundColor: backgroundColor,
       imageIcon: imageIcon,
+      imagePath: imagePath ?? this.imagePath,
       summary: summary,
       keyTakeaways: keyTakeaways,
       sections: sections,
@@ -81,6 +86,7 @@ class LearningArticleModel {
           imageColor: AppColors.shoppingOrange,
           backgroundColor: AppColors.shoppingOrangeLight,
           imageIcon: Icons.school_rounded,
+          imagePath: 'assets/images/budgeting_hero.jpg',
           summary:
               'Learn the 50/30/20 rule tailored for student budgets and part-time income streams.',
           keyTakeaways: [
@@ -130,6 +136,7 @@ class LearningArticleModel {
           imageColor: AppColors.primaryBlue,
           backgroundColor: AppColors.primaryBlueLight,
           imageIcon: Icons.balance_rounded,
+          imagePath: 'assets/images/budgeting_hero.jpg',
           summary:
               'Give every rupee a job. Zero-based budgeting forces intentional spending and eliminates financial blind spots.',
           keyTakeaways: [
@@ -175,6 +182,7 @@ class LearningArticleModel {
           imageColor: AppColors.primaryPink,
           backgroundColor: AppColors.primaryPinkLight,
           imageIcon: Icons.savings_rounded,
+          imagePath: 'assets/images/saving_hero.jpg',
           summary:
               'Simple daily habits to automate micro-savings and build an emergency cushion you can rely on.',
           keyTakeaways: [
@@ -224,6 +232,7 @@ class LearningArticleModel {
           imageColor: AppColors.successGreen,
           backgroundColor: AppColors.successGreenLight,
           imageIcon: Icons.track_changes_rounded,
+          imagePath: 'assets/images/saving_hero.jpg',
           summary:
               'Set SMART milestone targets for gadgets, travel, and personal investments that keep you motivated and on track.',
           keyTakeaways: [
@@ -269,6 +278,7 @@ class LearningArticleModel {
           imageColor: AppColors.purple,
           backgroundColor: AppColors.purpleLight,
           imageIcon: Icons.pie_chart_rounded,
+          imagePath: 'assets/images/budgeting_hero.jpg',
           summary:
               'How to spot hidden recurring subscriptions and identify unnecessary impulse buys before they drain your account.',
           keyTakeaways: [
@@ -318,6 +328,7 @@ class LearningArticleModel {
           imageColor: AppColors.shoppingOrange,
           backgroundColor: AppColors.shoppingOrangeLight,
           imageIcon: Icons.lightbulb_rounded,
+          imagePath: 'assets/images/budgeting_hero.jpg',
           summary:
               'A plain-English primer on income, expenses, net worth, and why cash flow — not salary — determines financial freedom.',
           keyTakeaways: [
@@ -363,6 +374,7 @@ class LearningArticleModel {
           imageColor: AppColors.successGreen,
           backgroundColor: AppColors.successGreenLight,
           imageIcon: Icons.trending_up_rounded,
+          imagePath: 'assets/images/investing_hero.jpg',
           summary:
               'Everything you need to know to make your first investment — from compound interest to mutual funds — without the jargon.',
           keyTakeaways: [
@@ -413,6 +425,7 @@ class LearningArticleModel {
           imageColor: AppColors.expenseRed,
           backgroundColor: AppColors.expenseRedLight,
           imageIcon: Icons.credit_score_rounded,
+          imagePath: 'assets/images/credit_hero.jpg',
           summary:
               'What a credit score is, how it is calculated, why it matters for loans and housing, and five ways to improve yours.',
           keyTakeaways: [
@@ -463,6 +476,7 @@ class LearningArticleModel {
           imageColor: AppColors.purple,
           backgroundColor: AppColors.purpleLight,
           imageIcon: Icons.receipt_long_rounded,
+          imagePath: 'assets/images/credit_hero.jpg',
           summary:
               'A beginner-friendly guide to income tax brackets, deductions you might be missing, and how to file your first return.',
           keyTakeaways: [

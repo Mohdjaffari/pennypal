@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/budget_model.dart';
 import '../../components/budgets/category_picker_sheet.dart';
@@ -31,6 +32,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
       CategoryPickerSheet.budgetCategories.first;
   String _selectedPeriod = 'Monthly';
   bool _enableAlerts = true;
+  double _alertThreshold = 0.80; // Manual threshold: 0.50 to 1.0 (50% to 100%)
 
   double _currentMonthSpending = 0.0;
   int _currentMonthCount = 0;
@@ -41,11 +43,14 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
   @override
   void initState() {
     super.initState();
+    _amountController.addListener(_onAmountChanged);
     if (widget.initialBudget != null) {
       final b = widget.initialBudget!;
       _amountController.text = b.limitAmount % 1 == 0
           ? b.limitAmount.toInt().toString()
           : b.limitAmount.toStringAsFixed(2);
+      _alertThreshold = b.alertThreshold;
+      _enableAlerts = b.enableAlert;
 
       final match = CategoryPickerSheet.budgetCategories.firstWhere(
         (c) => PennyPalRepository.isCategoryMatch(c['name'] as String, b.category),
@@ -90,8 +95,13 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
     super.dispose();
+  }
+
+  void _onAmountChanged() {
+    setState(() {});
   }
 
   Future<void> _chooseCategory() async {
@@ -171,6 +181,8 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
       icon: _selectedCategory['icon'] as IconData,
       color: _selectedCategory['color'] as Color,
       backgroundColor: _selectedCategory['bgColor'] as Color,
+      alertThreshold: _alertThreshold,
+      enableAlert: _enableAlerts,
     );
 
     await PennyPalRepository.instance.saveBudget(budgetToSave);
@@ -218,7 +230,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: isEditing ? 'Edit Budget Limit 🎯' : 'Set New Budget 🎯',
+        title: isEditing ? 'Edit Budget Limit' : 'Set New Budget',
         subtitle: isEditing
             ? 'Adjust monthly spending limit for ${_selectedCategory['name']}'
             : 'Define monthly limit & alert threshold',
@@ -313,8 +325,8 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 4. Spending Alerts Toggle Card
-                _buildAlertToggle(),
+                // 4. Spending Alerts Manual Threshold Card
+                _buildAlertThresholdCard(),
                 const SizedBox(height: 36),
 
                 // 5. Save Button
@@ -384,64 +396,386 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     );
   }
 
-  Widget _buildAlertToggle() {
+  Color _getAlertThresholdColor(double threshold) {
+    if (threshold <= 0.65) {
+      return AppColors.primaryBlue;
+    } else if (threshold <= 0.82) {
+      return const Color(0xFFF59E0B); // Amber / Warning
+    } else {
+      return AppColors.primaryPink; // Urgent / High risk
+    }
+  }
+
+  Widget _buildPresetChip(int percent, String label) {
+    final isSelected = (_alertThreshold * 100).round() == percent;
+    final color = _getAlertThresholdColor(percent / 100.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _alertThreshold = percent / 100.0);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected
+                ? Colors.white
+                : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertThresholdCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final limit = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    final thresholdPercent = (_alertThreshold * 100).round();
+    final triggerAmount = limit * _alertThreshold;
+    final alertColor = _getAlertThresholdColor(_alertThreshold);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surfaceOf(context),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderOf(context), width: 1),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: _enableAlerts
+              ? alertColor.withValues(alpha: 0.35)
+              : AppColors.borderOf(context),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _enableAlerts
+                ? alertColor.withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.02),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header Row with Notification Icon, Title, and Enable Switch
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.primaryPink.withValues(alpha: 0.2)
-                      : AppColors.primaryPinkLight,
-                  borderRadius: BorderRadius.circular(10),
+                  color: _enableAlerts
+                      ? alertColor.withValues(alpha: isDark ? 0.22 : 0.12)
+                      : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.notifications_active_outlined,
-                  color: AppColors.primaryPink,
+                child: Icon(
+                  _enableAlerts
+                      ? Icons.notifications_active_rounded
+                      : Icons.notifications_off_outlined,
+                  color: _enableAlerts ? alertColor : AppColors.textMuted,
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Spending Alerts',
-                    style: TextStyle(
-                      color: AppColors.textPrimaryOf(context),
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Spending Alert',
+                          style: TextStyle(
+                            color: AppColors.textPrimaryOf(context),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (_enableAlerts) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: alertColor.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '$thresholdPercent%',
+                              style: TextStyle(
+                                color: alertColor,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _enableAlerts
+                          ? 'Set warning trigger threshold'
+                          : 'Alert notifications paused',
+                      style: TextStyle(
+                        color: AppColors.textSecondaryOf(context),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: _enableAlerts,
+                activeThumbColor: Colors.white,
+                activeTrackColor: alertColor,
+                onChanged: (val) {
+                  HapticFeedback.lightImpact();
+                  setState(() => _enableAlerts = val);
+                },
+              ),
+            ],
+          ),
+
+          if (_enableAlerts) ...[
+            const SizedBox(height: 18),
+
+            // Dynamic Threshold & Amount Display
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.tune_rounded, size: 16, color: alertColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Trigger Alert At:',
+                        style: TextStyle(
+                          color: AppColors.textSecondaryOf(context),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Warn me at 80% usage',
+                  Text(
+                    limit > 0
+                        ? 'Rs. ${triggerAmount.toInt()} ($thresholdPercent%)'
+                        : '$thresholdPercent% of limit',
                     style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
+                      color: alertColor,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          Switch(
-            value: _enableAlerts,
-            activeThumbColor: Colors.white,
-            activeTrackColor: AppColors.primaryPink,
-            onChanged: (val) => setState(() => _enableAlerts = val),
-          ),
+            ),
+            const SizedBox(height: 16),
+
+            // Custom Interactive Progress Bar / Slider
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: alertColor,
+                inactiveTrackColor: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE2E8F0),
+                thumbColor: alertColor,
+                overlayColor: alertColor.withValues(alpha: 0.18),
+                trackHeight: 6.5,
+                thumbShape: const RoundSliderThumbShape(
+                  enabledThumbRadius: 10,
+                  elevation: 3,
+                ),
+                trackShape: const RoundedRectSliderTrackShape(),
+                valueIndicatorTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+              child: Slider(
+                value: (_alertThreshold * 100).clamp(50.0, 100.0),
+                min: 50.0,
+                max: 100.0,
+                divisions: 10,
+                label: '$thresholdPercent%',
+                onChanged: (val) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _alertThreshold = val / 100.0);
+                },
+              ),
+            ),
+
+            // Visual Progress Bar Preview
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final totalW = constraints.maxWidth;
+                      final currentSpendRatio = limit > 0
+                          ? (_currentMonthSpending / limit).clamp(0.0, 1.0)
+                          : 0.0;
+
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // Base Track
+                          Container(
+                            height: 8,
+                            width: totalW,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          // Current Month Spend Fill (if any)
+                          if (currentSpendRatio > 0)
+                            Container(
+                              height: 8,
+                              width: (totalW * currentSpendRatio).clamp(0.0, totalW),
+                              decoration: BoxDecoration(
+                                color: currentSpendRatio >= _alertThreshold
+                                    ? AppColors.expenseRed
+                                    : AppColors.primaryBlue,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          // Alert Threshold Marker Pin
+                          Positioned(
+                            left: ((totalW * _alertThreshold) - 5).clamp(0.0, totalW - 10),
+                            top: -3,
+                            child: Container(
+                              width: 10,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: alertColor,
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(color: Colors.white, width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: alertColor.withValues(alpha: 0.4),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '50% (Early)',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Alert at $thresholdPercent%',
+                        style: TextStyle(
+                          color: alertColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Text(
+                        '100% (Limit)',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Quick Preset Percentage Chips
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildPresetChip(50, '50%'),
+                _buildPresetChip(70, '70%'),
+                _buildPresetChip(80, '80% (Std)'),
+                _buildPresetChip(90, '90%'),
+                _buildPresetChip(100, '100%'),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Contextual Guidance Hint
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: alertColor.withValues(alpha: isDark ? 0.12 : 0.07),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, size: 15, color: alertColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      limit > 0
+                          ? 'PennyPal will alert you when you spend Rs. ${triggerAmount.toInt()} ($thresholdPercent% of your Rs. ${limit.toInt()} budget).'
+                          : 'PennyPal will alert you when $thresholdPercent% of this budget is consumed.',
+                      style: TextStyle(
+                        color: alertColor,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

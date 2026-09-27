@@ -732,10 +732,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           const SizedBox(height: 8),
           Text(
             willExceed
-                ? '⚠️ This expense will exceed your monthly limit by Rs. ${(projectedSpent - budget.limitAmount).toInt()}!'
+                ? 'This expense will exceed your monthly limit by Rs. ${(projectedSpent - budget.limitAmount).toInt()}'
                 : isNearLimit
-                    ? '⚡ Caution: Will consume $projectedPercentage% of monthly limit (Rs. ${(budget.limitAmount - projectedSpent).toInt()} remaining).'
-                    : '✓ Within budget: Rs. ${(budget.limitAmount - projectedSpent).toInt()} will remain after this expense.',
+                    ? 'Caution: Will consume $projectedPercentage% of monthly limit (Rs. ${(budget.limitAmount - projectedSpent).toInt()} remaining).'
+                    : 'Within budget: Rs. ${(budget.limitAmount - projectedSpent).toInt()} will remain after this expense.',
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w600,

@@ -110,7 +110,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'Contact Us 📬',
+        title: 'Contact Us',
         subtitle: 'We are here to help anytime',
         isBackNavigation: true,
         onMenuPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),

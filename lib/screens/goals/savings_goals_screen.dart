@@ -111,7 +111,7 @@ class SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: '${context.tr('saving_goals')} 🎯',
+        title: context.tr('saving_goals'),
         subtitle: context.tr('smart_targets_desc'),
         isBackNavigation: true,
         onMenuPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
@@ -568,7 +568,7 @@ class SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                                         children: [
                                           const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
                                           const SizedBox(width: 10),
-                                          Text('Added Rs. ${entered.toInt()} to ${goal.title}! 🎉'),
+                                          Text('Added Rs. ${entered.toInt()} to ${goal.title}'),
                                         ],
                                       ),
                                       backgroundColor: AppColors.successGreen,

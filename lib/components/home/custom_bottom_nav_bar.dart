@@ -41,15 +41,18 @@ class CustomBottomNavBar extends StatelessWidget {
     return BottomAppBar(
       color: AppColors.surfaceOf(context),
       surfaceTintColor: Colors.transparent,
+      padding: EdgeInsets.zero,
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
       elevation: 16,
       clipBehavior: Clip.antiAlias,
-      child: SizedBox(
-        height: 62,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 62,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Left navigation items (Home, Expenses)
@@ -85,8 +88,9 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildNavItem({
     required BuildContext context,

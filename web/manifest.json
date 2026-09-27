@@ -1,11 +1,11 @@
 {
-    "name": "pages_app",
-    "short_name": "pages_app",
+    "name": "PennyPal - Smart Personal Finance",
+    "short_name": "PennyPal",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0B132B",
+    "theme_color": "#1E40AF",
+    "description": "Smart Personal Finance, Expense Tracker & Budget Management.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

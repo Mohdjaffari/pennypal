@@ -23,7 +23,6 @@ import '../learning/learning_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../profile/profile_screen.dart';
-import '../../components/common/sync_status_badge.dart';
 import '../../core/repository/pennypal_repository.dart';
 import '../../core/auth/auth_service.dart';
 import '../../core/localization/language_service.dart';
@@ -51,7 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<SavingsGoalsScreenState> _goalsKey = GlobalKey<SavingsGoalsScreenState>();
   int _currentTabIndex = 0;
-  bool _useSparklineStyle = false;
 
   List<TransactionModel> _transactions = [];
   List<SavingGoalModel> _goals = [];
@@ -570,65 +568,23 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (_currentTabIndex) {
       case 1:
         return HomeHeader(
-          title: '${context.tr('all_expenses')} 🧾',
+          title: context.tr('all_expenses'),
           subtitle: context.tr('track_analyze_spending'),
+          hasUnreadNotification: AuthService.instance.isLoggedIn,
           onMenuPressed: () {
             _scaffoldKey.currentState?.openDrawer();
           },
-          actions: [
-            HomeHeader.circularButton(
-              icon: Icons.notifications_none_rounded,
-              onTap: _openNotifications,
-              tooltip: 'Notifications',
-              badge: Positioned(
-                top: 10,
-                right: 11,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryPink,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.surfaceOf(context),
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          onNotificationPressed: _openNotifications,
         );
       case 2:
         return HomeHeader(
-          title: '${context.tr('saving_goals')} 🎯',
+          title: context.tr('saving_goals'),
           subtitle: context.tr('smart_targets_desc'),
+          hasUnreadNotification: AuthService.instance.isLoggedIn,
           onMenuPressed: () {
             _scaffoldKey.currentState?.openDrawer();
           },
-          actions: [
-            HomeHeader.circularButton(
-              icon: Icons.notifications_none_rounded,
-              onTap: _openNotifications,
-              tooltip: 'Notifications',
-              badge: Positioned(
-                top: 10,
-                right: 11,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryPink,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.surfaceOf(context),
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          onNotificationPressed: _openNotifications,
         );
       default:
         return HomeHeader(
@@ -675,7 +631,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       default:
-        return _buildDashboardBody();
+        return SafeArea(
+          bottom: false,
+          child: _buildDashboardBody(),
+        );
     }
   }
 
@@ -772,22 +731,19 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Real-time Offline SQLite & Firebase Sync Badge
-          const SyncStatusBadge(),
-
-          // Total Balance Card (Tap to toggle between Figma design & Sparkline graph variant)
-          GestureDetector(
+          // Total Balance Hero Card (Vibrant Blue Sparkline Style)
+          TotalBalanceCard(
+            balance: _formatCurrency(_totalBalance),
+            trendPercentage: _transactions.isEmpty ? 'Start tracking' : '+12% this month',
+            isTrendPositive: _totalBalance >= 0,
+            useSparklineStyle: true,
             onTap: () {
-              setState(() {
-                _useSparklineStyle = !_useSparklineStyle;
-              });
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ReportsScreen(),
+                ),
+              );
             },
-            child: TotalBalanceCard(
-              balance: _formatCurrency(_totalBalance),
-              trendPercentage: _transactions.isEmpty ? 'Start tracking' : '+12% this month',
-              isTrendPositive: _totalBalance >= 0,
-              useSparklineStyle: _useSparklineStyle,
-            ),
           ),
           const SizedBox(height: 18),
 

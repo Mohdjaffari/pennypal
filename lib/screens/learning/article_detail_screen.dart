@@ -287,7 +287,7 @@ class _BackButton extends StatelessWidget {
   }
 }
 
-/// Gradient header banner with hero icon, category pill, and title.
+/// Hero image banner with category pill and title.
 class _ArticleBanner extends StatelessWidget {
   final LearningArticleModel article;
   final bool isDark;
@@ -297,6 +297,118 @@ class _ArticleBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accentColor = article.imageColor;
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    if (article.imagePath != null) {
+      final bannerHeight = 250.0 + topPadding;
+      return SizedBox(
+        width: double.infinity,
+        height: bannerHeight,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // 1. Hero Image
+            Image.asset(
+              article.imagePath!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  _buildGradientFallback(context, accentColor, topPadding),
+            ),
+
+            // 2. Multi-stop Dark Gradient for optimal text legibility
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.35, 0.70, 1.0],
+                  colors: [
+                    Colors.black.withValues(alpha: 0.55),
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.65),
+                    Colors.black.withValues(alpha: 0.90),
+                  ],
+                ),
+              ),
+            ),
+
+            // 3. Category Chip and Title Overlay
+            Positioned(
+              left: 22,
+              right: 22,
+              bottom: 24,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Category Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.90),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.35),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(article.imageIcon, color: Colors.white, size: 13),
+                        const SizedBox(width: 5),
+                        Text(
+                          article.category.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Article Title
+                  Text(
+                    article.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                      letterSpacing: -0.5,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 10,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildGradientFallback(context, accentColor, topPadding);
+  }
+
+  Widget _buildGradientFallback(
+      BuildContext context, Color accentColor, double topPadding) {
     final bgColor = isDark
         ? accentColor.withValues(alpha: 0.18)
         : article.backgroundColor;
@@ -304,14 +416,13 @@ class _ArticleBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 60,
+        top: topPadding + 60,
         bottom: 32,
         left: 22,
         right: 22,
       ),
       decoration: BoxDecoration(
         color: bgColor,
-        // Subtle gradient overlay
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -324,7 +435,6 @@ class _ArticleBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Category pill
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
@@ -353,8 +463,6 @@ class _ArticleBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Article Title
           Text(
             article.title,
             style: TextStyle(

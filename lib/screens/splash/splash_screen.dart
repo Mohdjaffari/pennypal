@@ -339,7 +339,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
 
                   // Spacing above the wave
-                  SizedBox(height: size.height * 0.15),
+                  SizedBox(height: (size.height * 0.12).clamp(16.0, 90.0)),
                 ],
               ),
             ),
@@ -419,36 +419,68 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// Builds the hero illustration with asset fallback and smooth presentation.
+  /// Builds the hero illustration with transparent PNG, soft ambient halo, and dark mode excellence.
   Widget _buildHeroIllustration() {
-    return Image.asset(
-      'assets/images/splash_illustration.jpg',
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        // High-fidelity fallback vector if asset is loading or missing
-        return Container(
-          width: 280,
-          height: 200,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.school_rounded, color: Color(0xFF2563EB), size: 54),
-              SizedBox(height: 10),
-              Text(
-                'PennyPal Student Finance',
-                style: TextStyle(
-                  color: Color(0xFF1E40AF),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Ambient soft glow behind transparent character & elements
+            Container(
+              width: 260,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    (isDark ? const Color(0xFF38BDF8) : const Color(0xFF93C5FD))
+                        .withValues(alpha: isDark ? 0.16 : 0.22),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Image.asset(
+              'assets/images/splash_illustration.png',
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              errorBuilder: (context, error, stackTrace) {
+                // High-fidelity fallback vector if asset is loading or missing
+                return Container(
+                  width: 280,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFBFDBFE),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.school_rounded,
+                        color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                        size: 54,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'PennyPal Student Finance',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         );
       },
     );

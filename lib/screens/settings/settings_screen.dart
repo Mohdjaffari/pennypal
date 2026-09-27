@@ -5,6 +5,7 @@ import '../../components/settings/settings_action_tile.dart';
 import '../../components/settings/settings_switch_tile.dart';
 import '../../components/settings/language_selector_sheet.dart';
 import '../../components/home/home_header.dart';
+import '../notifications/notifications_screen.dart';
 import '../info/about_us_screen.dart';
 import '../info/contact_us_screen.dart';
 import '../info/feedback_screen.dart';
@@ -85,10 +86,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: '${context.tr('settings')} ⚙️',
+        title: context.tr('settings'),
         subtitle: context.tr('preferences'),
         isBackNavigation: true,
         onMenuPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
+        onNotificationPressed: () => _navigateTo(const NotificationsScreen()),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -102,6 +104,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 10),
               SettingsCardGroup(
                 children: [
+                  SettingsActionTile(
+                    icon: Icons.notifications_none_rounded,
+                    title: context.tr('notifications'),
+                    subtitle: NotificationService.instance.unreadCount > 0
+                        ? '${NotificationService.instance.unreadCount} unread alert${NotificationService.instance.unreadCount == 1 ? '' : 's'}'
+                        : 'View all recent alerts & notifications',
+                    iconColor: AppColors.primaryPink,
+                    onTap: () => _navigateTo(const NotificationsScreen()),
+                  ),
+                  Divider(height: 1, indent: 20, endIndent: 20, color: borderColor),
                   SettingsActionTile(
                     icon: Icons.language_rounded,
                     title: context.tr('language'),
@@ -158,22 +170,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               const SizedBox(width: 10),
                               Text(val
-                                  ? '🔔 Notifications enabled'
-                                  : '🔕 Notifications muted'),
+                                  ? 'Notifications enabled'
+                                  : 'Notifications muted'),
                             ],
                           ),
                           duration: const Duration(seconds: 2),
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
-                          action: val
-                              ? SnackBarAction(
-                                  label: 'TEST',
-                                  textColor: AppColors.primaryPink,
-                                  onPressed: () => NotificationService.instance
-                                      .triggerTestAlert(context),
-                                )
-                              : null,
                         ),
                       );
                     },
@@ -194,36 +198,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         await NotificationService.instance.setPushAlertsEnabled(val);
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        if (val) {
-                          NotificationService.instance.triggerTestAlert(context);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Row(
-                                children: [
-                                  Icon(Icons.notifications_paused_rounded,
-                                      color: Colors.white, size: 18),
-                                  SizedBox(width: 10),
-                                  Text('🔕 Push alert banners paused'),
-                                ],
-                              ),
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                Icon(
+                                  val
+                                      ? Icons.check_circle_rounded
+                                      : Icons.notifications_paused_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(val
+                                    ? 'Push alert banners enabled'
+                                    : 'Push alert banners paused'),
+                              ],
                             ),
-                          );
-                        }
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
                       },
-                    ),
-                    Divider(height: 1, indent: 20, endIndent: 20, color: borderColor),
-                    SettingsActionTile(
-                      icon: Icons.send_rounded,
-                      title: 'Send Test Push Alert',
-                      subtitle: 'Simulate a real-time spending warning banner',
-                      iconColor: AppColors.primaryBlue,
-                      onTap: () =>
-                          NotificationService.instance.triggerTestAlert(context),
                     ),
                   ],
                 ],

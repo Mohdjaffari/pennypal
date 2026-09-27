@@ -16,7 +16,7 @@ class AboutUsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundOf(context),
       appBar: HomeHeader(
-        title: 'About PennyPal 💜',
+        title: 'About PennyPal',
         subtitle: 'Smart financial buddy for students',
         isBackNavigation: true,
         onMenuPressed: onBack ?? () => Navigator.of(context).maybePop(),
@@ -84,23 +84,24 @@ class AboutUsScreen extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 72,
-            height: 72,
+            width: 76,
+            height: 76,
             decoration: BoxDecoration(
-              gradient: AppColors.pinkGradient,
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryPink.withValues(alpha: 0.35),
+                  color: AppColors.primaryBlue.withValues(alpha: isDark ? 0.4 : 0.25),
                   blurRadius: 18,
                   offset: const Offset(0, 6),
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.account_balance_wallet_rounded,
-              color: Colors.white,
-              size: 38,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: Image.asset(
+                'assets/images/app_logo.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -402,7 +403,7 @@ class AboutUsScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text('Replay Splash Screen 🎬',
+                  Text('Replay Splash Screen',
                       style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,

@@ -74,38 +74,47 @@ class BarChartCard extends StatelessWidget {
                   children: dataPoints.map((point) {
                     final barHeight = (availableHeight * point.percentage).clamp(8.0, availableHeight);
 
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Tooltip or amount indicator on high values
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOutCubic,
-                          width: 14,
-                          height: barHeight,
-                          decoration: BoxDecoration(
-                            color: point.color,
-                            borderRadius: BorderRadius.circular(7),
-                            boxShadow: [
-                              BoxShadow(
-                                color: point.color.withValues(alpha: 0.25),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
+                    return Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeOutCubic,
+                                width: 14,
+                                height: barHeight,
+                                decoration: BoxDecoration(
+                                  color: point.color,
+                                  borderRadius: BorderRadius.circular(7),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: point.color.withValues(alpha: 0.25),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        // Label
-                        Text(
-                          point.label,
-                          style: TextStyle(
-                            color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          const SizedBox(height: 8),
+                          // Label
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              point.label,
+                              style: TextStyle(
+                                color: isDark ? AppColors.darkTextSecondary : AppColors.textMuted,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   }).toList(),
                 );

@@ -86,32 +86,92 @@ class CategoryBudgetProgressCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Percentage Text
-                  Text(
-                    '${budget.usagePercentage}%',
-                    style: TextStyle(
-                      color: budget.isOverBudget
-                          ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed)
-                          : AppColors.textSecondaryOf(context),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  // Percentage Text & Alert Threshold
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (budget.isAlertTriggered) ...[
+                            Icon(
+                              budget.isOverBudget
+                                  ? Icons.error_outline_rounded
+                                  : Icons.notifications_active_rounded,
+                              size: 13,
+                              color: budget.isOverBudget
+                                  ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed)
+                                  : const Color(0xFFF59E0B),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            '${budget.usagePercentage}%',
+                            style: TextStyle(
+                              color: budget.isOverBudget
+                                  ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed)
+                                  : (budget.isAlertTriggered
+                                      ? const Color(0xFFF59E0B)
+                                      : AppColors.textSecondaryOf(context)),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (budget.enableAlert && budget.alertThresholdPercentage > 0)
+                        Text(
+                          'Alert ${budget.alertThresholdPercentage}%',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // Progress Bar Track
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: budget.progressRatio,
-                  backgroundColor: AppColors.surfaceMutedOf(context),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    budget.isOverBudget ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed) : budget.color,
+              // Progress Bar Track with Alert Threshold Notch
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: budget.progressRatio,
+                      backgroundColor: AppColors.surfaceMutedOf(context),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        budget.isOverBudget
+                            ? (isDark ? const Color(0xFFF87171) : AppColors.expenseRed)
+                            : (budget.isAlertTriggered
+                                ? const Color(0xFFF59E0B)
+                                : budget.color),
+                      ),
+                      minHeight: 6,
+                    ),
                   ),
-                  minHeight: 6,
-                ),
+                  if (budget.enableAlert && budget.alertThreshold > 0.1 && budget.alertThreshold < 1.0)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final markX = constraints.maxWidth * budget.alertThreshold;
+                        return Positioned(
+                          left: (markX - 1).clamp(0.0, constraints.maxWidth - 2),
+                          top: -1,
+                          child: Container(
+                            width: 2,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white70 : Colors.black45,
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                ],
               ),
             ],
           ),
